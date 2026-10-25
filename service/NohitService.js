@@ -1,9 +1,10 @@
 const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
+const { Nohit } = require("../objects/Nohit");
 
 class NohitService {
 
-    constructor() {
-        this.nohitData = new JsonNohitDataAccess();
+    constructor(nohitData = new JsonNohitDataAccess()) {
+        this.nohitData = nohitData;
     }
     
     async lookup(id){
@@ -11,12 +12,33 @@ class NohitService {
         return nohit;
     }
 
-    async submit(difficulty, boss, url, comment){
-        //returns String
+    async lookupByBoss(userId, difficulty, boss){
+        const resolved = this.resolveDifficulty(difficulty);
+        const difficultyName = resolved ? resolved.standard : difficulty;
+        const bossName = this.nohitData.getBoss(boss) ?? boss;
+        const nohit = await this.nohitData.getNohitByData(userId, difficultyName, bossName);
+        return nohit;
+    }
+
+    async submit(userId, difficulty, boss, url, comment){
+        const resolved = this.resolveDifficulty(difficulty);
+        if (!resolved) {
+            return undefined;
+        }
+        const bossName = this.nohitData.getBoss(boss) ?? boss;
+        if (!resolved.base.hasBoss(bossName)) {
+            return undefined;
+        }
+        const id = (await this.totalNohits()) + 1;
+        const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
+        await this.nohitData.submitNohit(newNohit);
+        return newNohit;
     }
 
     async recomment(id, newComment){
-        //returns String
+        const nohit = await this.nohitData.getNohit(id);
+        nohit.UserComment = newComment;
+        this.nohitData.submitNohit(nohit);
     }
 
     async deleteNohit(id, difficulty, boss){
@@ -24,8 +46,53 @@ class NohitService {
     }
 
     async totalNohits(){
-        //returns number
+        return await this.nohitData.getTotal();
+    }
+
+    resolveDifficulty(difficultyText){
+        if (typeof difficultyText !== "string" || difficultyText.trim() === "") {
+            return undefined;
+        }
+        const parts = difficultyText.split("-").map(part => part.trim()).filter(Boolean);
+        if (parts.length === 0) {
+            return undefined;
+        }
+        const difficulties = parts.map(part => this.findDifficulty(part));
+        if (difficulties.some(difficulty => difficulty === undefined)) {
+            return undefined;
+        }
+        const bases = difficulties.filter(difficulty => !difficulty.isModifier);
+        const modifiers = difficulties.filter(difficulty => difficulty.isModifier);
+        if (bases.length !== 1) {
+            return undefined;
+        }
+        const base = bases[0];
+        for (const modifier of modifiers) {
+            if (!base.allowedModifiers.includes(modifier.name)) {
+                return undefined;
+            }
+        }
+        const orderedModifiers = base.allowedModifiers.filter(name =>
+            modifiers.some(modifier => modifier.name === name)
+        );
+        const standard = [...orderedModifiers, base.name].join("-");
+        return { base, standard };
+    }
+
+    findDifficulty(token){
+        const direct = this.nohitData.getDifficulty(token);
+        if (direct) {
+            return direct;
+        }
+        for (const difficulty of this.nohitData.difficulties.values()) {
+            if (difficulty.abbreviation === token) {
+                return difficulty;
+            }
+        }
+        return undefined;
     }
 
 }
-module.exports = new NohitService();
+const service = new NohitService();
+module.exports = service;
+module.exports.NohitService = NohitService;

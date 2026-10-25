@@ -15,7 +15,7 @@ client.on('clientReady', () => {
   });
 });
 
-const COMMANDS = new Set(["lookup"]);
+const COMMANDS = new Set(["lookup, submit, recomment, addboss, createdifficulty, addboss"]);
 service.setClient(client);
 client.on('messageCreate', async (message) => {
     if(message.author.bot){
