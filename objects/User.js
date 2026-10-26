@@ -8,13 +8,14 @@ class User{
     }
     
     async addNohit(nohitID, difficulty){
-        const idList = [];
-        if (OwnedNohits.has(difficulty)) {
-            idList = OwnedNohits.get(difficulty);
+        let idList = [];
+        if (this.OwnedNohits.has(difficulty)) {
+            idList = this.OwnedNohits.get(difficulty);
         }
         if (!idList.includes(nohitID)) {
             idList.push(nohitID);
-            OwnedNohits.set(difficulty, idList);
+            this.OwnedNohits.set(difficulty, idList);
         }
     }
 }
+module.exports = {User};

@@ -1,4 +1,3 @@
-const NohitService = require("../service/NohitService.js");
 class Nohit{
     ID;
     UserID;
@@ -15,7 +14,6 @@ class Nohit{
         this.ID = id;
         this.UserID = userId;
         this.Difficulty = difficulty;
-        NohitService.nohitData.getUser(UserID).addNohit(ID, Difficulty);
         this.Boss = boss;
         this.Url = url;
         this.UserComment = comment;

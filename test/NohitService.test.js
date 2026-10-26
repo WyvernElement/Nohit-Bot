@@ -7,6 +7,7 @@ const path = require("path");
 const nohitService = require("../service/NohitService");
 const { NohitService } = require("../service/NohitService");
 const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
+const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Difficulty } = require("../objects/Difficulty");
 
 const backupPath = path.join(__dirname, "../Backup/NohitsData.json");
@@ -33,10 +34,13 @@ function createService() {
     data.addDifficulty(new Difficulty("Defiled", "Def", true));
     data.addAlias("ks", "King Slime");
 
+    const userData = new JsonUserDataAccess(path.join(dir, "UserData.json"));
+
     return {
         dir,
         data,
-        service: new NohitService(data)
+        userData,
+        service: new NohitService(data, userData)
     };
 }
 
@@ -133,18 +137,18 @@ test("submit standardizes modifiers and boss aliases", async (t) => {
     assert.equal(found.Difficulty, "Shroomed-Defiled-Death");
 });
 
-test("submit assigns the next id and lookupByBoss returns the latest match", async (t) => {
+test("submit assigns the next id for a different boss", async (t) => {
     const { dir, service } = createService();
     t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
     const first = await service.submit("7", "Death", "Eye of Cthulhu", "https://youtu.be/one", "one");
-    const second = await service.submit("7", "Death", "Eye of Cthulhu", "https://youtu.be/two", "two");
+    const second = await service.submit("7", "Death", "King Slime", "https://youtu.be/two", "two");
 
     assert.equal(first.ID, 1);
     assert.equal(second.ID, 2);
     assert.equal(await service.totalNohits(), 2);
 
-    const latest = await service.lookupByBoss("7", "Death", "Eye of Cthulhu");
+    const latest = await service.lookupByBoss("7", "Death", "King Slime");
     assert.equal(latest.ID, 2);
     assert.equal(latest.Url, "https://youtu.be/two");
 });
@@ -179,6 +183,98 @@ test("submit returns undefined when a modifier is not allowed", async (t) => {
     assert.equal(await service.totalNohits(), 0);
 });
 
+test("submit adds the nohit id to a new user's difficulty list", async (t) => {
+    const { dir, service, userData } = createService();
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    const userId = "422320337758453761";
+    const created = await service.submit(
+        userId,
+        "Death",
+        "King Slime",
+        "https://youtu.be/example",
+        "first try"
+    );
+
+    const user = userData.getUser(userId);
+    assert.equal(user.ID, userId);
+    assert.deepEqual(user.OwnedNohits.get("Death"), [created.ID]);
+});
+
+test("submit appends ids under each standardized difficulty", async (t) => {
+    const { dir, service, userData } = createService();
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    const userId = "422320337758453761";
+    const kingSlime = await service.submit(userId, "Death", "King Slime", "https://youtu.be/ks", "ks");
+    const eye = await service.submit(userId, "D", "Eye of Cthulhu", "https://youtu.be/eye", "eye");
+    const shroomed = await service.submit(userId, "S-D", "ks", "https://youtu.be/shroom", "shroom");
+
+    const user = userData.getUser(userId);
+    assert.equal(userData.users.size, 1);
+    assert.deepEqual(user.OwnedNohits.get("Death"), [kingSlime.ID, eye.ID]);
+    assert.deepEqual(user.OwnedNohits.get("Shroomed-Death"), [shroomed.ID]);
+});
+
+test("submit does not create a user when the submission is rejected", async (t) => {
+    const { dir, service, userData } = createService();
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    const userId = "7";
+    assert.equal(await service.submit(userId, "NotADifficulty", "King Slime", "https://youtu.be/x", "nope"), undefined);
+    assert.equal(await service.submit(userId, "Death", "Providence", "https://youtu.be/x", "wrong boss"), undefined);
+    assert.equal(await service.submit(userId, "Shroomed-Empyreal", "Providence", "https://youtu.be/x", "bad mod"), undefined);
+
+    assert.equal(userData.users.has(userId), false);
+});
+
+test("submit does not change a user's nohit list when a later submission is rejected", async (t) => {
+    const { dir, service, userData } = createService();
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    const userId = "7";
+    const created = await service.submit(userId, "Death", "King Slime", "https://youtu.be/ok", "ok");
+    const user = userData.getUser(userId);
+
+    assert.equal(await service.submit(userId, "NotADifficulty", "Eye of Cthulhu", "https://youtu.be/x", "nope"), undefined);
+    assert.equal(await service.submit(userId, "Death", "Providence", "https://youtu.be/x", "wrong boss"), undefined);
+    assert.equal(await service.submit(userId, "Shroomed-Empyreal", "Providence", "https://youtu.be/x", "bad mod"), undefined);
+
+    assert.deepEqual(user.OwnedNohits.get("Death"), [created.ID]);
+    assert.equal(user.OwnedNohits.size, 1);
+});
+
+test("resubmitting a nohit properly overwrites the first nohit", async (t) => {
+    const { dir, service, userData } = createService();
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    const userId = "7";
+    const first = await service.submit(userId, "Death", "King Slime", "https://youtu.be/one", "one");
+    first.Verification = "Verified";
+    first.JudgeComment = "looks good";
+    first.JudgeID = 99;
+
+    const second = await service.submit(userId, "D", "ks", "https://youtu.be/two", "two");
+
+    assert.equal(second.ID, first.ID);
+    assert.equal(await service.totalNohits(), 1);
+    const stored = await service.lookup(first.ID);
+    assert.equal(stored, second);
+    assert.equal(stored.Url, "https://youtu.be/two");
+    assert.equal(stored.UserComment, "two");
+    assert.equal(stored.Verification, "Pending");
+    assert.equal(stored.JudgeComment, "Pending");
+    assert.equal(stored.JudgeID, 0);
+
+    const user = userData.getUser(userId);
+    assert.deepEqual(user.OwnedNohits.get("Death"), [first.ID]);
+
+    const other = await service.submit("8", "Death", "King Slime", "https://youtu.be/other", "other");
+    assert.equal(other.ID, 2);
+    assert.deepEqual(userData.getUser("8").OwnedNohits.get("Death"), [other.ID]);
+    assert.deepEqual(user.OwnedNohits.get("Death"), [first.ID]);
+});
+
 test("submit reads difficulty objects imported from json", async (t) => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "nohit-service-"));
     t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -206,7 +302,8 @@ test("submit reads difficulty objects imported from json", async (t) => {
     ]));
 
     const data = new JsonNohitDataAccess(path.join(dir, "NohitsData.json"), difficultiesPath, aliasesPath);
-    const service = new NohitService(data);
+    const userData = new JsonUserDataAccess(path.join(dir, "UserData.json"));
+    const service = new NohitService(data, userData);
     const created = await service.submit("9", "S-R", "ds", "https://youtu.be/imported", "from json");
 
     assert.ok(created);

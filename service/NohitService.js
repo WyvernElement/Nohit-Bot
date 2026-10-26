@@ -1,10 +1,16 @@
 const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
+const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
+const { User } = require("../objects/User");
 
 class NohitService {
 
-    constructor(nohitData = new JsonNohitDataAccess()) {
+    constructor(
+        nohitData = new JsonNohitDataAccess(),
+        userData = new JsonUserDataAccess()
+    ) {
         this.nohitData = nohitData;
+        this.userData = userData;
     }
     
     async lookup(id){
@@ -23,15 +29,19 @@ class NohitService {
     async submit(userId, difficulty, boss, url, comment){
         const resolved = this.resolveDifficulty(difficulty);
         if (!resolved) {
-            return undefined;
+            return undefined; //mmm I should change this to be something specific for the text
         }
         const bossName = this.nohitData.getBoss(boss) ?? boss;
         if (!resolved.base.hasBoss(bossName)) {
-            return undefined;
+            return undefined; //this one too
         }
-        const id = (await this.totalNohits()) + 1;
+        const existingNohit = await this.lookupByBoss(userId, difficulty, boss);
+        const id = existingNohit ? existingNohit.ID : (await this.totalNohits()) + 1;
         const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
+        const user = this.userData.getUser(userId);
+        await user.addNohit(id, resolved.standard);
         await this.nohitData.submitNohit(newNohit);
+        await this.userData.updateUser(userId, user);
         return newNohit;
     }
 
@@ -90,6 +100,10 @@ class NohitService {
             }
         }
         return undefined;
+    }
+
+    async getUser(id){
+
     }
 
 }

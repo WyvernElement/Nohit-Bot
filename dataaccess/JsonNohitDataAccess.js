@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const { Nohit } = require("../objects/Nohit");
-const { User } = require("../objects/User");
 const { Difficulty } = require ("../objects/Difficulty");
 class JsonNohitDataAccess {
 
@@ -14,7 +13,6 @@ class JsonNohitDataAccess {
         this.difficultiesJsonPath = difficultiesJsonPath;
         this.aliasesJsonPath = aliasesJsonPath;
         this.nohits = this.importNohits();
-        this.users = new Map();
         this.difficulties = this.importDifficulties();
         this.aliases = this.importAliases();
     }
@@ -56,13 +54,6 @@ class JsonNohitDataAccess {
             return aliasMap;
         }
         return new Map();
-    }
-
-    getUser(id){
-        if (!this.users.has(id)) {
-            this.users.set(id, new User(id));
-        }
-        return this.users.get(id);
     }
 
     addAlias(alias, boss){
