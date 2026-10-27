@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const { Nohit } = require("../objects/Nohit");
+const { Journey } = require("../objects/Journey");
 const { Difficulty } = require ("../objects/Difficulty");
+const { NohitService } = require("../service/NohitService");
 class JsonNohitDataAccess {
 
     constructor(
@@ -13,6 +15,7 @@ class JsonNohitDataAccess {
         this.difficultiesJsonPath = difficultiesJsonPath;
         this.aliasesJsonPath = aliasesJsonPath;
         this.nohits = this.importNohits();
+        this.journeys = this.importJourneys();
         this.difficulties = this.importDifficulties();
         this.aliases = this.importAliases();
     }
@@ -23,9 +26,25 @@ class JsonNohitDataAccess {
             const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
             const nohitMap = new Map();
             for (const item of parsedJson) {
-                nohitMap.set(item.ID, Object.assign(new Nohit(), item));
+                const nohit = Object.assign(new Nohit(), item);
+                const journey = this.createOrGetJourney(nohit.UserID, nohit.Difficulty);
+                journey.addNohit(nohit.ID);
+                nohitMap.set(item.ID, nohit);
             }
             return nohitMap;
+        }
+        return new Map();
+    }
+
+    importJourneys(){
+        if (fs.existsSync(this.journeysJsonPath)){
+            const rawJson = fs.readFileSync(this.journeysJsonPath, "utf-8");
+            const parsedJson = JSON.parse(rawJson) // i don't know how we're formatting this, so i'll leave it empty for now
+            const journeyMap = new Map();
+            for (const item of parsedJson) {
+                journeyMap.set(item.ID, Object.assign(new Journey(), item));
+            }
+            return journeyMap;
         }
         return new Map();
     }
@@ -97,6 +116,31 @@ class JsonNohitDataAccess {
             }
         }
         return match;
+    }
+
+    async getJourney(id){
+        const numericId = Number(id);
+        return this.journeys.get(id)
+    }
+
+    async getJourneyByData(userId, difficulty){
+        for (const journey of this.journeys.values()) {
+            const sameUser = String(nohit.UserID) === String(userId);
+            const sameDifficulty = nohit.Difficulty === difficulty;
+            if (sameUser && sameDifficulty) {
+                return journey;
+            }
+        }
+        return undefined;
+    }
+
+    async createOrGetJourney(userId, difficulty){
+        const journey = this.getJourneyByData(userId, difficulty)
+        if (journey === undefined) {
+            journey = new Journey(await this.getTotal(), userId, difficulty)
+            await NohitService.userData.getUser(userId).addJourney(journey.ID, journey);
+        }
+        return journey;
     }
 
     async getTotal(){

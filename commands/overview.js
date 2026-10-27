@@ -1,3 +1,4 @@
+const { Nohit } = require("../objects/Nohit.js");
 const NohitService = require("../service/NohitService.js");
 
 async function run(message, args, client){
@@ -7,12 +8,13 @@ async function run(message, args, client){
         return message.reply("Who're you after? That's not a person.");
     }
     else{
-        let response = `## Overview for ${message.author.username}`;
+        let response = `## Overview for ${client.users.fetch(id).username}`;
         let total = 0;
         let v = 0;
         let dq = 0;
-        for (const [difficulty, journey] of user.OwnedNohits){
-            journey.update();
+        NohitService.updateJourneys();
+        for (const [difficulty, id] of user.OwnedNohits){
+            const journey = await NohitService.lookupJourney(id);
             total += journey.Total;
             v += journey.V;
             dq += journey.DQ;
@@ -21,7 +23,8 @@ async function run(message, args, client){
         **${v}** have been verified,
         **${dq}** have been disqualified,
         and **${total - v - dq}** are still pending review.`;
-        for (const [difficulty, journey] of user.OwnedNohits){
+        for (const [difficulty, id] of user.OwnedNohits){
+            const journey = await NohitService.lookupJourney(id);
             response += `\n### **${difficulty}:**
             Verified: ${journey.V}
             Disqualified: ${journey.DQ}

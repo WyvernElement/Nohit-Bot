@@ -26,6 +26,18 @@ class NohitService {
         return nohit;
     }
 
+    async lookupJourney(id){
+        const journey = await this.nohitData.getJourney(id);
+        return journey;
+    }
+
+    async lookupByUser(userId, difficulty){
+        const resolved = this.resolveDifficulty(difficulty);
+        const difficultyName = resolved ? resolved.standard : difficulty;
+        const journey = await this.nohitData.getJourneyByData(userId, difficultyName);
+        return journey;
+    }
+
     async submit(userId, difficulty, boss, url, comment){
         const resolved = this.resolveDifficulty(difficulty);
         if (!resolved) {
@@ -39,7 +51,8 @@ class NohitService {
         const id = existingNohit ? existingNohit.ID : (await this.totalNohits()) + 1;
         const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
         const user = this.userData.getUser(userId);
-        await user.addNohit(id, resolved.standard);
+        const journey = this.nohitData.createOrGetJourney(userId, resolved.standard);
+        await journey.addNohit(id);
         await this.nohitData.submitNohit(newNohit);
         await this.userData.updateUser(userId, user);
         return newNohit;
@@ -53,6 +66,26 @@ class NohitService {
 
     async deleteNohit(id, difficulty, boss){
         //returns String
+    }
+
+    async updateJourneys(){
+        for (const journey of this.nohitData.journeys){
+            journey.V = 0;
+            journey.DQ = 0;
+            journey.Pending = 0;
+            for (const nohit of journey.NohitIDs){
+                const v = await lookup(nohit).Verification;
+                if (v === "Verified"){
+                    journey.V++;
+                }
+                else if (v === "Disqualified"){
+                    journey.DQ++;
+                }
+                else{
+                    journey.Pending++;
+                }
+            }
+        }
     }
 
     async totalNohits(){
