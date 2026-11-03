@@ -3,6 +3,7 @@ class Journey{
     UserID;
     Difficulty;
     NohitIDs;
+    Playlist;
     get Total(){
         return this.NohitIDs.length;
     }
@@ -24,6 +25,10 @@ class Journey{
         if (!this.NohitIDs.includes(id)){
             this.NohitIDs.push(id);
         }
+    }
+
+    setPlaylist(link){
+        this.Playlist = link;
     }
 }
 module.exports = {Journey}

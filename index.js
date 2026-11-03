@@ -17,9 +17,10 @@ client.on('clientReady', () => {
 
 const COMMANDS = new Map();
 addAlias("lookup", "l");
-addAlias("submit", "s");
 addAlias("progress", "p");
 addAlias("overview", "o");
+addAlias("submit", "s");
+addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment");
 addAlias("addboss");
 addAlias("createdifficulty");
