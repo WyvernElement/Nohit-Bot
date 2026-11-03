@@ -8,11 +8,11 @@ class User{
         this.ID = id
     }
     
-    async addJourney(id, journey){
-        this.OwnedNohits.set(id, journey);
+    async addJourney(difficulty, id){
+        this.OwnedNohits.set(difficulty, id);
     }
 
-    async addPlaylist(link, difficulty){
+    async addPlaylist(difficulty, link){
         this.Playlists.set(difficulty, link);
     }
 }

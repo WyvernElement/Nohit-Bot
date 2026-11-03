@@ -1,5 +1,6 @@
-const { Nohit } = require("../objects/Nohit.js");
+const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
+const { Nohit } = require("../objects/Nohit.js");
 
 async function run(message, args, client){
     const id = args[0];
@@ -9,11 +10,10 @@ async function run(message, args, client){
         return message.reply("Try again, love. You're not making sense here.");
     }
     else{
-        let response = '';
-        reponse += `**__${client.users.fetch(journey.UserID).username} on ${journey.Difficulty}__**
-        :V_: = Verified
-        :dq: = Disqualied, needs redo
-        :question: = Submitted, yet to be reviewed`;
+        let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
+:V_: = Verified
+:dq: = Disqualied, needs redo
+:question: = Submitted, yet to be reviewed\n\n`;
 
         for (const id of journey.NohitIDs){
             const nohit = await NohitService.lookup(id);
@@ -23,9 +23,14 @@ async function run(message, args, client){
 
         const difficulty = await NohitService.findDifficulty(journey.Difficulty);
         const remaining = (difficulty.bosses.length - journey.Total) + journey.DQ;
-        response += `\n\n${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
-        **${remaining} nohit${remaining === 1 ? "" : "s"} remain.**`;
+        response += `\n\n**__Totals:__**
+${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
+**${remaining} nohit${remaining === 1 ? "" : "s"} remain.**`;
 
         return message.reply(response);
     }
+}
+
+module.exports = {
+    run
 }

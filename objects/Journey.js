@@ -1,4 +1,3 @@
-const NohitService = require("../service/NohitService.js");
 class Journey{
     ID;
     UserID;
@@ -21,9 +20,10 @@ class Journey{
         this.Pending = 0;
     }
 
-    async addNohit(id){
+    addNohit(id){
         if (!this.NohitIDs.includes(id)){
             this.NohitIDs.push(id);
         }
     }
 }
+module.exports = {Journey}

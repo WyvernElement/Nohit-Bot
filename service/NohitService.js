@@ -1,6 +1,7 @@
 const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
+const { Journey } = require("../objects/Journey");
 const { User } = require("../objects/User");
 
 class NohitService {
@@ -11,6 +12,20 @@ class NohitService {
     ) {
         this.nohitData = nohitData;
         this.userData = userData;
+        this.journeys = new Map();
+        this.buildJourneys();
+    }
+
+    async buildJourneys(){
+        for (const [id, nohit] of this.nohitData.nohits){
+            let journey = await this.getJourneyByData(nohit.UserID, nohit.Difficulty)
+            if (journey === undefined) {
+                journey = new Journey(this.journeys.size + 1, nohit.UserID, nohit.Difficulty);
+                await this.userData.getUser(nohit.UserID).addJourney(journey.Difficulty, journey.ID);
+            }
+            journey.addNohit(nohit.ID);
+            this.journeys.set(journey.ID, journey);
+        }
     }
     
     async lookup(id){
@@ -27,14 +42,20 @@ class NohitService {
     }
 
     async lookupJourney(id){
-        const journey = await this.nohitData.getJourney(id);
+        this.journeys = new Map();
+        await this.buildJourneys(); // holy shit. placeholder because the actual function doesn't work without an await but you can't put that in a constructor
+        
+        const journey = await this.journeys.get(Number(id));
         return journey;
     }
 
     async lookupByUser(userId, difficulty){
+        this.journeys = new Map();
+        await this.buildJourneys(); // holy shit. placeholder because the actual function doesn't work without an await but you can't put that in a constructor
+        
         const resolved = this.resolveDifficulty(difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
-        const journey = await this.nohitData.getJourneyByData(userId, difficultyName);
+        const journey = await this.getJourneyByData(userId, difficultyName);
         return journey;
     }
 
@@ -57,6 +78,21 @@ class NohitService {
         await this.userData.updateUser(userId, user);
         return newNohit;
     }
+    
+    async getJourneyByData(userId, difficulty){
+        for (const journey of this.journeys.values()) {
+            const sameUser = String(journey.UserID) === String(userId);
+            const sameDifficulty = journey.Difficulty === difficulty;
+            if (sameUser && sameDifficulty) {
+                return journey;
+            }
+        }
+        return undefined;
+    }
+
+    async createOrGetJourney(userId, difficulty){
+
+    }
 
     async recomment(id, newComment){
         const nohit = await this.nohitData.getNohit(id);
@@ -69,12 +105,12 @@ class NohitService {
     }
 
     async updateJourneys(){
-        for (const journey of this.nohitData.journeys){
+        for (const [id, journey] of this.journeys){
             journey.V = 0;
             journey.DQ = 0;
             journey.Pending = 0;
             for (const nohit of journey.NohitIDs){
-                const v = await lookup(nohit).Verification;
+                const v = await this.lookup(nohit).Verification;
                 if (v === "Verified"){
                     journey.V++;
                 }
@@ -89,7 +125,7 @@ class NohitService {
     }
 
     async totalNohits(){
-        return await this.nohitData.getTotal();
+        return this.nohitData.getTotal();
     }
 
     resolveDifficulty(difficultyText){
