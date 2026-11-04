@@ -13,6 +13,7 @@ class JsonNohitDataAccess {
         this.difficultiesJsonPath = difficultiesJsonPath;
         this.aliasesJsonPath = aliasesJsonPath;
         this.nohits = this.importNohits();
+        //this.journeys = this.importJourneys();
         this.difficulties = this.importDifficulties();
         this.aliases = this.importAliases();
     }
@@ -24,6 +25,10 @@ class JsonNohitDataAccess {
             const nohitMap = new Map();
             for (const item of parsedJson) {
                 nohitMap.set(item.ID, Object.assign(new Nohit(), item));
+                const nohit = Object.assign(new Nohit(), item);
+                //const journey = this.createOrGetJourney(nohit.UserID, nohit.Difficulty);
+                //journey.addNohit(nohit.ID);
+                nohitMap.set(item.ID, nohit);
             }
             return nohitMap;
         }
@@ -34,6 +39,9 @@ class JsonNohitDataAccess {
         if(fs.existsSync(this.difficultiesJsonPath)){
             const rawJson = fs.readFileSync(this.difficultiesJsonPath, "utf-8");
             const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
+            if (!Array.isArray(parsedJson)) {
+                return new Map();
+            }
             const difficultyMap = new Map();
             for (const item of parsedJson) {
                 difficultyMap.set(item.name, Object.assign(new Difficulty(), item));
@@ -104,15 +112,18 @@ class JsonNohitDataAccess {
     }
 
     async saveNohits(){
-        fs.writeFileSync(this.nohitsJsonPath, JSON.stringify(this.nohits, null, 2));
+        const items = Array.from(this.nohits.values());
+        fs.writeFileSync(this.nohitsJsonPath, JSON.stringify(items, null, 2));
     }
 
     async saveAliases(){
-        fs.writeFileSync(this.aliasesJsonPath, JSON.stringify(this.aliases, null, 2));
+        const items = Array.from(this.aliases.entries()).map(([alias, boss]) => ({ alias, boss }));
+        fs.writeFileSync(this.aliasesJsonPath, JSON.stringify(items, null, 2));
     }
 
     async saveDifficulties(){
-        fs.writeFileSync(this.difficultiesJsonPath, JSON.stringify(this.difficulties, null, 2));
+        const items = Array.from(this.difficulties.values());
+        fs.writeFileSync(this.difficultiesJsonPath, JSON.stringify(items, null, 2));
     }
 
 }

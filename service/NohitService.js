@@ -3,6 +3,7 @@ const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
 const { Journey } = require("../objects/Journey");
 const { User } = require("../objects/User");
+const { Difficulty } = require("../objects/Difficulty");
 
 class NohitService {
 
@@ -169,6 +170,45 @@ class NohitService {
             }
         }
         return undefined;
+    }
+
+    createDifficulty(name, abbreviation, isModifier){
+        if (typeof name !== "string" || name.trim() === "") {
+            return undefined;
+        }
+        if (typeof abbreviation !== "string" || abbreviation.trim() === "") {
+            return undefined;
+        }
+        const trimmedName = name.trim();
+        const trimmedAbbrev = abbreviation.trim();
+        if (this.nohitData.getDifficulty(trimmedName)) {
+            return { conflict: "name" };
+        }
+        for (const difficulty of this.nohitData.difficulties.values()) {
+            if (difficulty.abbreviation === trimmedAbbrev) {
+                return { conflict: "abbreviation" };
+            }
+        }
+        const difficulty = new Difficulty(trimmedName, trimmedAbbrev, Boolean(isModifier));
+        this.nohitData.addDifficulty(difficulty);
+        return difficulty;
+    }
+
+    async addBoss(difficultyToken, bossName){
+        if (typeof bossName !== "string" || bossName.trim() === "") {
+            return undefined;
+        }
+        const difficulty = this.findDifficulty(difficultyToken);
+        if (!difficulty || difficulty.isModifier) {
+            return undefined;
+        }
+        const trimmedBoss = bossName.trim();
+        if (difficulty.hasBoss(trimmedBoss)) {
+            return { duplicate: true };
+        }
+        difficulty.addBoss(trimmedBoss);
+        await this.nohitData.saveDifficulties();
+        return difficulty;
     }
 
     async getUser(id){
