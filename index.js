@@ -22,7 +22,7 @@ addAlias("progress", "p");
 addAlias("overview", "o");
 addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
-addAlias("recomment");
+addAlias("recomment", ["rewritecomment"]);
 addAlias("addboss");
 addAlias("createdifficulty");
 addAlias("setup");
