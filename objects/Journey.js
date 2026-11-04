@@ -28,7 +28,8 @@ class Journey{
     }
 
     setPlaylist(link){
-        this.Playlist = link;
+        const cleanedLink = link.split("?si=")[0].split("&si=")[0];  // removes stupid tracker from links automatically
+        this.Playlist = cleanedLink;
     }
 }
 module.exports = {Journey}
