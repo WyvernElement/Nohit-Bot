@@ -8,6 +8,9 @@ async function run(message, args, client){
         return message.reply("That isn't a nohit ID");
     }
     else if(nohit.UserComment === "Deleted" && nohit.UserID === 0){
+        if(id === '12504' && Math.random() < 0.1){
+            return message.reply(":12504:");
+        }
         return message.reply("This nohit has been deleted.");
     }
     else{

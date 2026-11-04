@@ -3,6 +3,7 @@ class Journey{
     UserID;
     Difficulty;
     NohitIDs;
+    Playlist;
     get Total(){
         return this.NohitIDs.length;
     }
@@ -24,6 +25,11 @@ class Journey{
         if (!this.NohitIDs.includes(id)){
             this.NohitIDs.push(id);
         }
+    }
+
+    setPlaylist(link){
+        const cleanedLink = link.split("?si=")[0].split("&si=")[0];  // removes stupid tracker from links automatically
+        this.Playlist = cleanedLink;
     }
 }
 module.exports = {Journey}

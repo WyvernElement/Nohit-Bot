@@ -2,8 +2,11 @@ const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
 const { Journey } = require("../objects/Journey");
+<<<<<<< HEAD
 const { User } = require("../objects/User");
 const { Difficulty } = require("../objects/Difficulty");
+=======
+>>>>>>> 2bd79bfd7c631eb6bde63e42164b80695ffe3ead
 
 class NohitService {
 
@@ -13,19 +16,13 @@ class NohitService {
     ) {
         this.nohitData = nohitData;
         this.userData = userData;
-        this.journeys = new Map();
-        this.buildJourneys();
+        this.addJourneyAssociation();
     }
 
-    async buildJourneys(){
-        for (const [id, nohit] of this.nohitData.nohits){
-            let journey = await this.getJourneyByData(nohit.UserID, nohit.Difficulty)
-            if (journey === undefined) {
-                journey = new Journey(this.journeys.size + 1, nohit.UserID, nohit.Difficulty);
-                await this.userData.getUser(nohit.UserID).addJourney(journey.Difficulty, journey.ID);
-            }
-            journey.addNohit(nohit.ID);
-            this.journeys.set(journey.ID, journey);
+    async addJourneyAssociation(){
+        for (const [id, journey] of this.nohitData.journeys){
+            const user = await this.userData.getUser(journey.UserID);
+            await user.addJourney(journey.Difficulty, id);
         }
     }
     
@@ -43,20 +40,14 @@ class NohitService {
     }
 
     async lookupJourney(id){
-        this.journeys = new Map();
-        await this.buildJourneys(); // holy shit. placeholder because the actual function doesn't work without an await but you can't put that in a constructor
-        
-        const journey = await this.journeys.get(Number(id));
+        const journey = await this.nohitData.getJourney(id);
         return journey;
     }
 
     async lookupByUser(userId, difficulty){
-        this.journeys = new Map();
-        await this.buildJourneys(); // holy shit. placeholder because the actual function doesn't work without an await but you can't put that in a constructor
-        
         const resolved = this.resolveDifficulty(difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
-        const journey = await this.getJourneyByData(userId, difficultyName);
+        const journey = await this.nohitData.getJourneyByData(userId, difficultyName);
         return journey;
     }
 
@@ -79,21 +70,6 @@ class NohitService {
         await this.userData.updateUser(userId, user);
         return newNohit;
     }
-    
-    async getJourneyByData(userId, difficulty){
-        for (const journey of this.journeys.values()) {
-            const sameUser = String(journey.UserID) === String(userId);
-            const sameDifficulty = journey.Difficulty === difficulty;
-            if (sameUser && sameDifficulty) {
-                return journey;
-            }
-        }
-        return undefined;
-    }
-
-    async createOrGetJourney(userId, difficulty){
-
-    }
 
     async recomment(id, newComment){
         const nohit = await this.nohitData.getNohit(id);
@@ -106,20 +82,22 @@ class NohitService {
     }
 
     async updateJourneys(){
-        for (const [id, journey] of this.journeys){
+        for (const [id, journey] of this.nohitData.journeys){
             journey.V = 0;
             journey.DQ = 0;
             journey.Pending = 0;
-            for (const nohit of journey.NohitIDs){
-                const v = await this.lookup(nohit).Verification;
-                if (v === "Verified"){
+            for (const id of journey.NohitIDs){
+                const nohit = await this.lookup(id);
+                switch (nohit.Verification){
+                case "Verified":
                     journey.V++;
-                }
-                else if (v === "Disqualified"){
+                    break;
+                case "Disqualified":
                     journey.DQ++;
-                }
-                else{
+                    break;
+                case "Pending":
                     journey.Pending++;
+                    break;
                 }
             }
         }

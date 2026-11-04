@@ -28,15 +28,18 @@ async function run(message, args, client){
 and **${total - v - dq}** are still pending review.`;
         for (const [difficulty, id] of user.OwnedNohits){
             const journey = await NohitService.lookupJourney(id);
-            response += `\n### **${difficulty}:**
-Verified: ${journey.V}
-Disqualified: ${journey.DQ}
-Pending: ${journey.Pending}`;
-            const link = user.Playlists.get(difficulty);
-            if (link === undefined){
-                response += "\nNo playlist? What next, no nohits? Come on, now!";
+            response += `\n### **${difficulty} - ${id}:**`
+            if (journey.V > 0){
+                response += `\nVerified: ${journey.V}`;
             }
-            else{
+            if (journey.DQ > 0){
+                response += `\nDisqualified: ${journey.DQ}`;
+            }
+            if (journey.Pending > 0){
+                response += `\nPending: ${journey.Pending}`;
+            }
+            const link = journey.Playlist;
+            if (link != undefined){
                 response += `\n[Playlist](${link})`;
             }
         }

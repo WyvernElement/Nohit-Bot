@@ -16,13 +16,16 @@ client.on('clientReady', () => {
 });
 
 const COMMANDS = new Map();
+addAlias("document", ["doc"]); // Remember to enclose any alias that's longer than 1 letter in an array too!
 addAlias("lookup", "l");
-addAlias("submit", "s");
 addAlias("progress", "p");
 addAlias("overview", "o");
+addAlias("submit", "s");
+addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment");
 addAlias("addboss");
 addAlias("createdifficulty");
+addAlias("setup");
 
 service.setClient(client);
 client.on('messageCreate', async (message) => {
