@@ -45,6 +45,10 @@ class JsonNohitDataAccess {
         return path.join(this.dataFolderPath, id, this.aliasesJsonPath);
     }
 
+    playlistPath(id){
+        return path.join(this.dataFolderPath, id, "/Backup/PlaylistsData.json");
+    }
+
 
 
     importNohits() {
@@ -128,21 +132,21 @@ class JsonNohitDataAccess {
         return aliasesMap;
     }
 
-    async buildJourneysFromNohitBotv2(){
-        for (const [id, nohit] of this.nohits){
-            let journey = await this.getJourneyByData(nohit.UserID, nohit.Difficulty)
+    async buildJourneysFromNohitBotv2(guildId){
+        for (const [id, nohit] of this.nohits.get(guildId)){
+            let journey = await this.getJourneyByData(guildId, nohit.UserID, nohit.Difficulty)
             if (journey === undefined) {
-                journey = new Journey(this.journeys.size + 1, nohit.UserID, nohit.Difficulty);
+                journey = new Journey(this.journeys.get(guildId).size + 1, nohit.UserID, nohit.Difficulty);
             }
             journey.addNohit(nohit.ID);
-            this.journeys.set(journey.ID, journey);
+            this.journeys.get(guildId).set(journey.ID, journey);
         }
-        const playlistsJsonPath = path.join(__dirname, "../Backup/PlaylistsData.json");
+        const playlistsJsonPath = this.playlistPath(guildId);
         if(fs.existsSync(playlistsJsonPath)){
             const rawJson = fs.readFileSync(playlistsJsonPath, "utf-8");
             const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
             for (const item of parsedJson) {
-                const journey = await this.getJourneyByData(item.UserID, item.Difficulty);
+                const journey = await this.getJourneyByData(guildId, item.UserID, item.Difficulty);
                 if (journey != undefined){
                     journey.setPlaylist(item.Url);
                 }
@@ -199,7 +203,7 @@ class JsonNohitDataAccess {
     }
 
     async getJourneyByData(guildId, userId, difficulty){
-        for (const journey of this.get(guildId).journeys.values()) {
+        for (const journey of this.journeys.get(guildId).values()) {
             const sameUser = String(journey.UserID) === String(userId);
             const sameDifficulty = journey.Difficulty === difficulty;
             if (sameUser && sameDifficulty) {
@@ -210,7 +214,7 @@ class JsonNohitDataAccess {
     }
 
     getTotal(guildId){
-        return this.get(guildId).nohits.size;
+        return this.nohits.get(guildId).size;
     }
 
     async saveNohits(guildId){

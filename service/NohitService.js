@@ -60,9 +60,9 @@ class NohitService {
         const existingNohit = await this.lookupByBoss(guildId, userId, difficulty, boss);
         const id = existingNohit ? existingNohit.ID : (await this.totalNohits(guildId)) + 1;
         const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
-        const user = this.userData.getUser(guildId, userId);
-        const journey = this.nohitData.createOrGetJourney(guildId, userId, resolved.standard);
-        await journey.addNohit(guildId, id);
+        const user = await this.userData.getUser(guildId, userId);
+        const journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
+        journey.addNohit(guildId, id);
         await this.nohitData.submitNohit(guildId, newNohit);
         await this.userData.updateUser(guildId, userId, user);
         return newNohit;
