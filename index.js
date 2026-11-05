@@ -25,6 +25,7 @@ addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment", ["rewritecomment"]);
 addAlias("addboss");
 addAlias("createdifficulty");
+addAlias("allowmodifier", ["allowmodifiers"]);
 addAlias("setup");
 
 service.setClient(client);

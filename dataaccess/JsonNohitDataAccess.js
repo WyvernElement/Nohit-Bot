@@ -16,11 +16,7 @@ class JsonNohitDataAccess {
         this.difficultiesJsonPath = difficultiesJsonPath;
         this.aliasesJsonPath = aliasesJsonPath;
         this.nohits = this.importNohits();
-<<<<<<< HEAD
-        //this.journeys = this.importJourneys();
-=======
         this.journeys = this.importJourneys();
->>>>>>> 2bd79bfd7c631eb6bde63e42164b80695ffe3ead
         this.difficulties = this.importDifficulties();
         this.aliases = this.importAliases();
     }
@@ -33,8 +29,6 @@ class JsonNohitDataAccess {
             for (const item of parsedJson) {
                 nohitMap.set(item.ID, Object.assign(new Nohit(), item));
                 const nohit = Object.assign(new Nohit(), item);
-                //const journey = this.createOrGetJourney(nohit.UserID, nohit.Difficulty);
-                //journey.addNohit(nohit.ID);
                 nohitMap.set(item.ID, nohit);
             }
             return nohitMap;

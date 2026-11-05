@@ -25,7 +25,7 @@ class Difficulty{
     }
 
     addModifier(modifier){
-        if(this.isModifier){
+        if(!this.isModifier){
             this.allowedModifiers.push(modifier);
             return true;
         }

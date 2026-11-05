@@ -1,13 +1,7 @@
 const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
-const { Journey } = require("../objects/Journey");
-<<<<<<< HEAD
-const { User } = require("../objects/User");
 const { Difficulty } = require("../objects/Difficulty");
-=======
->>>>>>> 2bd79bfd7c631eb6bde63e42164b80695ffe3ead
-
 class NohitService {
 
     constructor(
