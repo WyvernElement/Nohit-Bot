@@ -17,7 +17,7 @@ async function run(message, args, client){
         let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**${journey.Playlist ? "\nPlaylist: " + journey.Playlist : ""}
 :V_: = Verified
 :dq: = Disqualied, needs redo
-:question: = Submitted, yet to be reviewed\n\n`;
+:question: = Submitted, yet to be reviewed\n`;
 
         for (const id of journey.NohitIDs){
             const nohit = await NohitService.lookup(message.guildId, id);

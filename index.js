@@ -22,9 +22,10 @@ addAlias("progress", "p");
 addAlias("overview", "o");
 addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
-addAlias("recomment");
 addAlias("addboss", ["ab"]);
 addAlias("createdifficulty", ["cd"]);
+addAlias("recomment", ["rewritecomment"]);
+addAlias("allowmodifier", ["allowmodifiers"]);
 addAlias("setup");
 
 service.setClient(client);

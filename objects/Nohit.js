@@ -15,13 +15,20 @@ class Nohit{
         this.UserID = userId;
         this.Difficulty = difficulty;
         this.Boss = boss;
-        this.Url = url;
+        this.setURL(url);
         this.UserComment = comment;
         const now = new Date();
         this.Timestamp = now.toISOString();
         this.Verification = "Pending";
         this.JudgeComment = "Pending";
         this.JudgeID = 0;
+    }
+
+    setURL(url){
+        if(url != undefined){
+            const cleanedLink = url.split("?si=")[0].split("&si=")[0];  // removes stupid tracker from links automatically
+            this.Url = cleanedLink;
+        }
     }
 }
 module.exports = {Nohit}
