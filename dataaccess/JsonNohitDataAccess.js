@@ -152,6 +152,7 @@ class JsonNohitDataAccess {
                 }
             }
         }
+        this.saveJourneys(guildId);
     }
 
     addAlias(guildId, alias, boss){
@@ -199,7 +200,7 @@ class JsonNohitDataAccess {
 
     async getJourney(guildId, id) {
         const numericId = Number(id);
-        return this.get(guildId).journeys.get(numericId);
+        return this.journeys.get(guildId).get(numericId);
     }
 
     async getJourneyByData(guildId, userId, difficulty){
@@ -224,7 +225,7 @@ class JsonNohitDataAccess {
 
     async saveJourneys(guildId){
         const items = Array.from(this.journeys.get(guildId).values())
-        fs.writeFileSync(this.journeyPath(guildId), JSON.stringify(this.journeys, null, 2));
+        fs.writeFileSync(this.journeyPath(guildId), JSON.stringify(items, null, 2));
     }
 
     async saveAliases(guildId){

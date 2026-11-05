@@ -42,19 +42,20 @@ class JsonUserDataAccess{
         return usersMap;
     }
 
-    getUser(id){
-        if (!this.users.has(id)) {
-            this.users.set(id, new User(id));
+    getUser(guildId, id){
+        if (!this.users.get(guildId).has(id)) {
+            this.users.get(guildId).set(id, new User(id));
         }
-        return this.users.get(id);
+        return this.users.get(guildId).get(id);
     }
 
-    async saveUsers(){
-            fs.writeFileSync(this.userJsonPath, JSON.stringify(this.users, null, 2));
+    async saveUsers(guildId){
+            const items = Array.from(this.users.get(guildId).values());
+            fs.writeFileSync(this.userPath(guildId), JSON.stringify(items, null, 2));
     }
 
-    async updateUser(id, user){
-        this.users.set(id, user);
+    async updateUser(guildId, id, user){
+        this.users.get(guildId).set(id, user);
     }
 
 

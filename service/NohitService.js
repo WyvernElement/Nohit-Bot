@@ -13,12 +13,12 @@ class NohitService {
     ) {
         this.nohitData = nohitData;
         this.userData = userData;
-        this.addJourneyAssociation();
+        //this.addJourneyAssociation();
     }
 
-    async addJourneyAssociation(){
-        for (const [id, journey] of this.nohitData.journeys){
-            const user = await this.userData.getUser(journey.UserID);
+    async addJourneyAssociation(guildId){
+        for (const [id, journey] of this.nohitData.journeys.get(guildId)){
+            const user = await this.userData.getUser(guildId, journey.UserID);
             await user.addJourney(journey.Difficulty, id);
         }
     }
@@ -78,8 +78,8 @@ class NohitService {
         //returns String
     }
 
-    async updateJourneys(){
-        for (const [id, journey] of this.nohitData.journeys){
+    async updateJourneys(guildId){ //need to fix this so it will persist
+        for (const [id, journey] of this.nohitData.journeys.get(guildId)){
             journey.V = 0;
             journey.DQ = 0;
             journey.Pending = 0;

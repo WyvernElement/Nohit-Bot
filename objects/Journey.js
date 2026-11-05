@@ -4,9 +4,6 @@ class Journey{
     Difficulty;
     NohitIDs;
     Playlist;
-    get Total(){
-        return this.NohitIDs.length;
-    }
     V;
     DQ;
     Pending;
@@ -30,6 +27,10 @@ class Journey{
     setPlaylist(link){
         const cleanedLink = link.split("?si=")[0].split("&si=")[0];  // removes stupid tracker from links automatically
         this.Playlist = cleanedLink;
+    }
+
+    getTotal(){
+        return this.NohitIDs.length;
     }
 }
 module.exports = {Journey}
