@@ -2,11 +2,8 @@ const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
 const { Journey } = require("../objects/Journey");
-<<<<<<< HEAD
 const { User } = require("../objects/User");
 const { Difficulty } = require("../objects/Difficulty");
-=======
->>>>>>> 2bd79bfd7c631eb6bde63e42164b80695ffe3ead
 
 class NohitService {
 
@@ -26,58 +23,58 @@ class NohitService {
         }
     }
     
-    async lookup(id){
-        const nohit = await this.nohitData.getNohit(id);
+    async lookup(guildId, id){
+        const nohit = await this.nohitData.getNohit(guildId, id);
         return nohit;
     }
 
-    async lookupByBoss(userId, difficulty, boss){
-        const resolved = this.resolveDifficulty(difficulty);
+    async lookupByBoss(guildId, userId, difficulty, boss){
+        const resolved = this.resolveDifficulty(guildId, difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
-        const bossName = this.nohitData.getBoss(boss) ?? boss;
-        const nohit = await this.nohitData.getNohitByData(userId, difficultyName, bossName);
+        const bossName = this.nohitData.getBoss(guildId, boss) ?? boss;
+        const nohit = await this.nohitData.getNohitByData(guildId, userId, difficultyName, bossName);
         return nohit;
     }
 
-    async lookupJourney(id){
-        const journey = await this.nohitData.getJourney(id);
+    async lookupJourney(guildId, id){
+        const journey = await this.nohitData.getJourney(guildId, id);
         return journey;
     }
 
-    async lookupByUser(userId, difficulty){
-        const resolved = this.resolveDifficulty(difficulty);
+    async lookupByUser(guildId, userId, difficulty){
+        const resolved = this.resolveDifficulty(guildId, difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
-        const journey = await this.nohitData.getJourneyByData(userId, difficultyName);
+        const journey = await this.nohitData.getJourneyByData(guildId, userId, difficultyName);
         return journey;
     }
 
-    async submit(userId, difficulty, boss, url, comment){
-        const resolved = this.resolveDifficulty(difficulty);
+    async submit(guildId, userId, difficulty, boss, url, comment){
+        const resolved = this.resolveDifficulty(guildId, difficulty);
         if (!resolved) {
             return undefined; //mmm I should change this to be something specific for the text
         }
-        const bossName = this.nohitData.getBoss(boss) ?? boss;
+        const bossName = this.nohitData.getBoss(guildId, boss) ?? boss;
         if (!resolved.base.hasBoss(bossName)) {
             return undefined; //this one too
         }
-        const existingNohit = await this.lookupByBoss(userId, difficulty, boss);
-        const id = existingNohit ? existingNohit.ID : (await this.totalNohits()) + 1;
+        const existingNohit = await this.lookupByBoss(guildId, userId, difficulty, boss);
+        const id = existingNohit ? existingNohit.ID : (await this.totalNohits(guildId)) + 1;
         const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
-        const user = this.userData.getUser(userId);
-        const journey = this.nohitData.createOrGetJourney(userId, resolved.standard);
-        await journey.addNohit(id);
-        await this.nohitData.submitNohit(newNohit);
-        await this.userData.updateUser(userId, user);
+        const user = this.userData.getUser(guildId, userId);
+        const journey = this.nohitData.createOrGetJourney(guildId, userId, resolved.standard);
+        await journey.addNohit(guildId, id);
+        await this.nohitData.submitNohit(guildId, newNohit);
+        await this.userData.updateUser(guildId, userId, user);
         return newNohit;
     }
 
-    async recomment(id, newComment){
-        const nohit = await this.nohitData.getNohit(id);
+    async recomment(guildId, id, newComment){
+        const nohit = await this.nohitData.getNohit(guildId, id);
         nohit.UserComment = newComment;
-        this.nohitData.submitNohit(nohit);
+        this.nohitData.submitNohit(guildId, nohit);
     }
 
-    async deleteNohit(id, difficulty, boss){
+    async deleteNohit(guildId, id, difficulty, boss){
         //returns String
     }
 
@@ -103,11 +100,11 @@ class NohitService {
         }
     }
 
-    async totalNohits(){
-        return this.nohitData.getTotal();
+    async totalNohits(guildId){
+        return this.nohitData.getTotal(guildId);
     }
 
-    resolveDifficulty(difficultyText){
+    resolveDifficulty(guildId, difficultyText){
         if (typeof difficultyText !== "string" || difficultyText.trim() === "") {
             return undefined;
         }
@@ -115,7 +112,7 @@ class NohitService {
         if (parts.length === 0) {
             return undefined;
         }
-        const difficulties = parts.map(part => this.findDifficulty(part));
+        const difficulties = parts.map(part => this.findDifficulty(guildId, part));
         if (difficulties.some(difficulty => difficulty === undefined)) {
             return undefined;
         }
@@ -137,12 +134,12 @@ class NohitService {
         return { base, standard };
     }
 
-    findDifficulty(token){
-        const direct = this.nohitData.getDifficulty(token);
+    findDifficulty(guildId, token){
+        const direct = this.nohitData.getDifficulty(guildId, token);
         if (direct) {
             return direct;
         }
-        for (const difficulty of this.nohitData.difficulties.values()) {
+        for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
             if (difficulty.abbreviation === token) {
                 return difficulty;
             }
@@ -150,7 +147,7 @@ class NohitService {
         return undefined;
     }
 
-    createDifficulty(name, abbreviation, isModifier){
+    createDifficulty(guildId, name, abbreviation, isModifier){
         if (typeof name !== "string" || name.trim() === "") {
             return undefined;
         }
@@ -159,24 +156,24 @@ class NohitService {
         }
         const trimmedName = name.trim();
         const trimmedAbbrev = abbreviation.trim();
-        if (this.nohitData.getDifficulty(trimmedName)) {
+        if (this.nohitData.getDifficulty(guildId, trimmedName)) {
             return { conflict: "name" };
         }
-        for (const difficulty of this.nohitData.difficulties.values()) {
+        for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
             if (difficulty.abbreviation === trimmedAbbrev) {
                 return { conflict: "abbreviation" };
             }
         }
         const difficulty = new Difficulty(trimmedName, trimmedAbbrev, Boolean(isModifier));
-        this.nohitData.addDifficulty(difficulty);
+        this.nohitData.addDifficulty(guildId, difficulty);
         return difficulty;
     }
 
-    async addBoss(difficultyToken, bossName){
+    async addBoss(guildId, difficultyToken, bossName){
         if (typeof bossName !== "string" || bossName.trim() === "") {
             return undefined;
         }
-        const difficulty = this.findDifficulty(difficultyToken);
+        const difficulty = this.findDifficulty(guildId, difficultyToken);
         if (!difficulty || difficulty.isModifier) {
             return undefined;
         }
@@ -185,7 +182,7 @@ class NohitService {
             return { duplicate: true };
         }
         difficulty.addBoss(trimmedBoss);
-        await this.nohitData.saveDifficulties();
+        await this.nohitData.saveDifficulties(guildId);
         return difficulty;
     }
 

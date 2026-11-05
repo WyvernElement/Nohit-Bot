@@ -3,7 +3,7 @@ const NohitService = require("../service/NohitService.js");
 
 async function run(message, args, client){
     const id = args[0];
-    const nohit = await NohitService.lookup(id);
+    const nohit = await NohitService.lookup(message.guildId, id);
     if(nohit === undefined){
         return message.reply("That isn't a nohit ID");
     }

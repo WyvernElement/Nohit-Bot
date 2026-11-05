@@ -20,7 +20,7 @@ async function run(message, args, client) {
         );
     }
 
-    const result = await NohitService.addBoss(parsed.difficulty, parsed.boss);
+    const result = await NohitService.addBoss(message.guildId, parsed.difficulty, parsed.boss);
 
     if (result === undefined) {
         return message.reply(
@@ -29,7 +29,7 @@ async function run(message, args, client) {
     }
     if (result.duplicate) {
         return message.reply(
-            `**${parsed.boss}** is already on **${NohitService.findDifficulty(parsed.difficulty)?.name ?? parsed.difficulty}**.`
+            `**${parsed.boss}** is already on **${NohitService.findDifficulty(message.guildId, parsed.difficulty)?.name ?? parsed.difficulty}**.`
         );
     }
 

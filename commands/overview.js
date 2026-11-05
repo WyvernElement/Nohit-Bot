@@ -14,7 +14,7 @@ async function run(message, args, client){
         let dq = 0;
         await NohitService.updateJourneys();
         for (const [difficulty, id] of user.OwnedNohits){
-            const journey = await NohitService.lookupJourney(id);
+            const journey = await NohitService.lookupJourney(message.guildId, id);
             total += journey.Total;
             v += journey.V;
             dq += journey.DQ;
@@ -27,7 +27,7 @@ async function run(message, args, client){
 **${dq}** have been disqualified,
 and **${total - v - dq}** are still pending review.`;
         for (const [difficulty, id] of user.OwnedNohits){
-            const journey = await NohitService.lookupJourney(id);
+            const journey = await NohitService.lookupJourney(message.guildId, id);
             response += `\n### **${difficulty} - ${id}:**`
             if (journey.V > 0){
                 response += `\nVerified: ${journey.V}`;

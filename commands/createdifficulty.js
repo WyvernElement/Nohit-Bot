@@ -33,6 +33,7 @@ async function run(message, args, client) {
     }
 
     const result = NohitService.createDifficulty(
+        message.guildId,
         parsed.name,
         parsed.abbreviation,
         parsed.isModifier

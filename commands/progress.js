@@ -4,9 +4,9 @@ const NohitService = require("../service/NohitService.js");
 async function run(message, args, client){
     const id = args[0];
     const iid = args[1] ?? message.author.id;
-    const journey = await NohitService.lookupJourney(id) ?? await NohitService.lookupByUser(id, iid) ?? await NohitService.lookupByUser(iid, id);
+    const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, id, iid) ?? await NohitService.lookupByUser(message.guildId, iid, id);
     if (journey === undefined){
-        if (NohitService.resolveDifficulty(id) === undefined && NohitService.resolveDifficulty(iid) === undefined){
+        if (NohitService.resolveDifficulty(message.guildId, id) === undefined && NohitService.resolveDifficulty(message.guildId, iid) === undefined){
         return message.reply("Try again, love. You're not making sense here.");
         }
         else{
@@ -20,12 +20,12 @@ async function run(message, args, client){
 :question: = Submitted, yet to be reviewed\n\n`;
 
         for (const id of journey.NohitIDs){
-            const nohit = await NohitService.lookup(id);
+            const nohit = await NohitService.lookup(message.guildId, id);
             const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? ":V_:" : ":dq:";
             response += `\n${id} - ${nohit.Boss} - ${emoji}`;
         }
 
-        const difficulty = await NohitService.findDifficulty(journey.Difficulty);
+        const difficulty = await NohitService.findDifficulty(message.guildId, journey.Difficulty);
         const remaining = (/*difficulty.bosses.length*/ 44 - journey.Total) + journey.DQ;
         response += `\n\n**__Totals:__**
 ${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.

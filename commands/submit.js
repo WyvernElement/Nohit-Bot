@@ -49,12 +49,14 @@ async function run(message, args, client) {
     }
 
     const existing = await NohitService.lookupByBoss(
+        message.guildId,
         message.author.id,
         parsed.difficulty,
         parsed.boss
     );
 
     const nohit = await NohitService.submit(
+        message.guildId,
         message.author.id,
         parsed.difficulty,
         parsed.boss,

@@ -2,7 +2,7 @@ const NohitService = require("../service/NohitService.js");
 
 async function run(message, args, client){
     const id = args[0];
-    const journey = await NohitService.lookupJourney(id) ?? await NohitService.lookupByUser(message.author.id, id);
+    const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, message.author.id, id);
     const acceptedLinks = ["https://youtu.be/", "https://www.youtube.com/", "https://youtube.com"]; // unsure if bilibili has playlists, I don't use it
     if(journey === undefined){
         return message.reply("Not... sure what you're looking for.");

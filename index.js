@@ -23,8 +23,8 @@ addAlias("overview", "o");
 addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment");
-addAlias("addboss");
-addAlias("createdifficulty");
+addAlias("addboss", ["ab"]);
+addAlias("createdifficulty", ["cd"]);
 addAlias("setup");
 
 service.setClient(client);
