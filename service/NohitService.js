@@ -1,8 +1,6 @@
 const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
-const { Journey } = require("../objects/Journey");
-const { User } = require("../objects/User");
 const { Difficulty } = require("../objects/Difficulty");
 
 class NohitService {
@@ -13,7 +11,9 @@ class NohitService {
     ) {
         this.nohitData = nohitData;
         this.userData = userData;
-        //this.addJourneyAssociation();
+        for (const [guild, journeys] of nohitData.journeys){
+            this.addJourneyAssociation(guild);
+        }
     }
 
     async addJourneyAssociation(guildId){
@@ -84,7 +84,7 @@ class NohitService {
             journey.DQ = 0;
             journey.Pending = 0;
             for (const id of journey.NohitIDs){
-                const nohit = await this.lookup(id);
+                const nohit = await this.lookup(guildId, id);
                 switch (nohit.Verification){
                 case "Verified":
                     journey.V++;
@@ -140,7 +140,7 @@ class NohitService {
             return direct;
         }
         for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
-            if (difficulty.abbreviation === token) {
+            if (difficulty.abbreviation === token.toLowerCase() || difficulty.name.toLowerCase() === token.toLowerCase()) {
                 return difficulty;
             }
         }

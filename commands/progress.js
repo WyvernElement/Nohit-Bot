@@ -14,19 +14,29 @@ async function run(message, args, client){
         }
     }
     else{
-        let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**${journey.Playlist ? "\nPlaylist: " + journey.Playlist : ""}
+        let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
 :V_: = Verified
 :dq: = Disqualied, needs redo
 :question: = Submitted, yet to be reviewed\n`;
 
+        await NohitService.updateJourneys(message.guildId);
         for (const id of journey.NohitIDs){
             const nohit = await NohitService.lookup(message.guildId, id);
             const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? ":V_:" : ":dq:";
             response += `\n${id} - ${nohit.Boss} - ${emoji}`;
         }
 
+        if (journey.SpecialIDs){
+            response += "\n";
+            for (const id of journey.SpecialIDs){
+                const nohit = await NohitService.lookup(message.guildId, id);
+                const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? ":V_:" : ":dq:";
+                response += `\n${id} - ${nohit.Boss} - ${emoji}`;
+            }
+        }
+
         const difficulty = await NohitService.findDifficulty(message.guildId, journey.Difficulty);
-        const remaining = (/*difficulty.bosses.length*/ 44 - journey.Total) + journey.DQ;
+        const remaining = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
         response += `\n\n**__Totals:__**
 ${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
 **${remaining} nohit${remaining === 1 ? "" : "s"} remain.**`;

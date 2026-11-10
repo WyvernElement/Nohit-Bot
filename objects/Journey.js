@@ -3,6 +3,7 @@ class Journey{
     UserID;
     Difficulty;
     NohitIDs;
+    SpecialIDs;
     Playlist;
     V;
     DQ;
@@ -13,13 +14,19 @@ class Journey{
         this.UserID = userid;
         this.Difficulty = difficulty;
         this.NohitIDs = [];
+        this.SpecialIDs = [];
         this.V = 0;
         this.DQ = 0;
         this.Pending = 0;
     }
 
-    addNohit(id){
-        if (!this.NohitIDs.includes(id)){
+    addNohit(id, special){
+        if (special){
+            if (!this.SpecialIDs.includes(id)){
+                this.SpecialIDs.push(id);
+            }
+        }
+        else if (!this.NohitIDs.includes(id)){
             this.NohitIDs.push(id);
         }
     }

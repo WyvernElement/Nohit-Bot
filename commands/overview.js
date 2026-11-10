@@ -1,9 +1,10 @@
+const { MessageFlags } = require("discord.js");
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
 
 async function run(message, args, client){
     const id = args[0] ?? message.author.id;
-    const user = await NohitService.userData.getUser(id);
+    const user = await NohitService.userData.getUser(message.guildId, id);
     if(user === undefined){
         return message.reply("Who're you after? That's not a person.");
     }
@@ -12,10 +13,10 @@ async function run(message, args, client){
         let total = 0;
         let v = 0;
         let dq = 0;
-        await NohitService.updateJourneys();
+        await NohitService.updateJourneys(message.guildId);
         for (const [difficulty, id] of user.OwnedNohits){
             const journey = await NohitService.lookupJourney(message.guildId, id);
-            total += journey.Total;
+            total += journey.getTotal();
             v += journey.V;
             dq += journey.DQ;
         }
@@ -38,12 +39,17 @@ and **${total - v - dq}** are still pending review.`;
             if (journey.Pending > 0){
                 response += `\nPending: ${journey.Pending}`;
             }
+            for (const special of journey.SpecialIDs){
+                const nohit = await NohitService.lookup(message.guildId, special);
+                const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? ":V_:" : ":dq:";
+                response += `\n[${nohit.Boss}](<${nohit.Url}>) - ${emoji}`;
+            }
             const link = journey.Playlist;
             if (link != undefined){
-                response += `\n[Playlist](${link})`;
+                response += `\n[Playlist](<${link}>)`;
             }
         }
-        return message.reply(response);
+        return message.reply(response, [MessageFlags.SuppressEmbeds]);
     }
 }
 

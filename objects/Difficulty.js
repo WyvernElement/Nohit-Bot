@@ -11,7 +11,7 @@ class Difficulty{
         this.bosses = [];
         this.allowedModifiers = [];
     }
-
+    
     copyAdd(other){
         if(!this.isModifier){
             for(const boss of other.bosses){
@@ -34,8 +34,6 @@ class Difficulty{
         }
         return false;
     }
-
-
 
     hasBoss(boss){
         return this.bosses.includes(boss);

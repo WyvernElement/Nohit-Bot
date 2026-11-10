@@ -9,6 +9,9 @@ class Nohit{
     Verification;
     JudgeComment;
     JudgeID;
+    get Special(){
+        return ["Boss Rush"].includes(this.Boss);
+    }
 
     constructor(id, userId, difficulty, boss, url, comment){
         this.ID = id;

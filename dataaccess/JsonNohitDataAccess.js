@@ -58,7 +58,7 @@ class JsonNohitDataAccess {
                 const rawJson = fs.readFileSync(this.nohitPath(id), "utf-8");
                 const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
                 const nohitMap = new Map();
-                for (const item of parsedJson) {
+                for (const item of parsedJson){
                     const nohit = Object.assign(new Nohit(), item);
                     nohitMap.set(item.ID, nohit);
                 }
@@ -100,7 +100,7 @@ class JsonNohitDataAccess {
                 const difficultyMap = new Map();
                 for (const item of parsedJson) {
                     const difficulty = Object.assign(new Difficulty(), item);
-                    difficultyMap.set(item.ID, difficulty);
+                    difficultyMap.set(item.name, difficulty);
                 }
                 difficultiesMap.set(id, difficultyMap);
             }
@@ -138,7 +138,7 @@ class JsonNohitDataAccess {
             if (journey === undefined) {
                 journey = new Journey(this.journeys.get(guildId).size + 1, nohit.UserID, nohit.Difficulty);
             }
-            journey.addNohit(nohit.ID);
+            journey.addNohit(nohit.ID, nohit.Special);
             this.journeys.get(guildId).set(journey.ID, journey);
         }
         const playlistsJsonPath = this.playlistPath(guildId);
