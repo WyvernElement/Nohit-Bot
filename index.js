@@ -24,6 +24,7 @@ addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("addboss", ["ab"]);
 addAlias("createdifficulty", ["cd"]);
+addAlias("copydifficulty", ["cpd"]);
 addAlias("recomment", ["rewritecomment"]);
 addAlias("allowmodifier", ["allowmodifiers"]);
 addAlias("setup");

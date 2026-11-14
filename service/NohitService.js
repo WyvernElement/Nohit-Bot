@@ -186,7 +186,27 @@ class NohitService {
     }
 
     copyDifficulty(guildId, name, abbreviation, otherDifficulty){
-
+        if (typeof name !== "string" || name.trim() === ""){
+            return undefined;
+        }
+        if(typeof abbreviation !== "string" || abbreviation.trim() === ""){
+            return undefined;
+        }
+        const trimmedName = name.trim();
+        const trimmedAbbrev = abbreviation.trim();
+        if (this.nohitData.getDifficulty(guildId, trimmedName)) {
+            return { conflict: "name" };
+        }
+        for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
+            if (difficulty.abbreviation === trimmedAbbrev) {
+                return { conflict: "abbreviation" };
+            }
+        }
+        const otherDiff = this.findDifficulty(guildId, otherDifficulty);
+        const difficulty = new Difficulty(trimmedName, trimmedAbbrev, false);
+        difficulty.copyAdd(otherDiff);
+        this.nohitData.addDifficulty(guildId, difficulty);
+        return difficulty;
     }
 
     async addBoss(guildId, difficultyToken, bossName, order, textName){
