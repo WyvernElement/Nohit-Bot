@@ -5,12 +5,7 @@ function findBoss(difficulty, bossName){
     if (!difficulty?.bosses){
         return undefined;
     }
-    return difficulty.bosses.find(boss => {
-        if (typeof boss === "string"){
-            return boss === bossName;
-        }
-        return boss?.name === bossName || boss?.textName === bossName;
-    });
+    return difficulty.bosses.find(boss => boss.name === bossName || boss.textName === bossName);
 }
 
 function progressionOrder(difficulty, bossName){

@@ -3,6 +3,7 @@ const path = require("path");
 const { Nohit } = require("../objects/Nohit");
 const { Journey } = require ("../objects/Journey");
 const { Difficulty } = require ("../objects/Difficulty");
+const { Boss } = require("../objects/Boss");
 class JsonNohitDataAccess {
 
     constructor(
@@ -91,6 +92,13 @@ class JsonNohitDataAccess {
         return journeysMap;
     }
 
+    toBoss(boss){
+        if (typeof boss === "string") {
+            return new Boss(boss.replace(/ /g, ""), undefined, boss);
+        }
+        return new Boss(boss.name, boss.progressionOrder, boss.textName ?? boss.name);
+    }
+
     importDifficulties() {
         const difficultiesMap = new Map();
         for(const id of this.getSubfolders()){
@@ -100,6 +108,7 @@ class JsonNohitDataAccess {
                 const difficultyMap = new Map();
                 for (const item of parsedJson) {
                     const difficulty = Object.assign(new Difficulty(), item);
+                    difficulty.bosses = (item.bosses ?? []).map(boss => this.toBoss(boss));
                     difficultyMap.set(item.name, difficulty);
                 }
                 difficultiesMap.set(id, difficultyMap);

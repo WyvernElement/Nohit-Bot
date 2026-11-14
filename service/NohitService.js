@@ -33,7 +33,8 @@ class NohitService {
     async lookupByBoss(guildId, userId, difficulty, boss){
         const resolved = this.resolveDifficulty(guildId, difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
-        const bossName = this.nohitData.getBoss(guildId, boss) ?? boss;
+        const resolvedBoss = resolved ? this.resolveBoss(guildId, resolved.base, boss) : undefined;
+        const bossName = resolvedBoss?.textName ?? this.nohitData.getBoss(guildId, boss) ?? boss;
         const nohit = await this.nohitData.getNohitByData(guildId, userId, difficultyName, bossName);
         return nohit;
     }
@@ -55,13 +56,13 @@ class NohitService {
         if (!resolved) {
             return undefined; //mmm I should change this to be something specific for the text
         }
-        const bossName = this.nohitData.getBoss(guildId, boss) ?? boss;
-        if (!resolved.base.hasBoss(bossName)) {
+        const resolvedBoss = this.resolveBoss(guildId, resolved.base, boss);
+        if (!resolvedBoss) {
             return undefined; //this one too
         }
         const existingNohit = await this.lookupByBoss(guildId, userId, difficulty, boss);
         const id = existingNohit ? existingNohit.ID : (await this.totalNohits(guildId)) + 1;
-        const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
+        const newNohit = new Nohit(id, userId, resolved.standard, resolvedBoss.textName, url, comment);
         const user = await this.userData.getUser(guildId, userId);
         let journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
         if(!journey){
@@ -108,6 +109,15 @@ class NohitService {
 
     async totalNohits(guildId){
         return this.nohitData.getTotal(guildId);
+    }
+
+    resolveBoss(guildId, difficulty, token){
+        if (!difficulty || typeof token !== "string") {
+            return undefined;
+        }
+        const aliased = this.nohitData.getBoss(guildId, token);
+        const names = aliased ? [token, aliased] : [token];
+        return difficulty.bosses?.find(boss => names.includes(boss.name) || names.includes(boss.textName));
     }
 
     resolveDifficulty(guildId, difficultyText){
