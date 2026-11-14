@@ -65,10 +65,11 @@ class NohitService {
         const user = await this.userData.getUser(guildId, userId);
         let journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
         if(!journey){
-            journey = new Journey()
+            journey = new Journey((await this.nohitData.totalJourneys(guildId)) + 1, userId, resolved.standard);
         }
-        journey.addNohit(guildId, id);
+        journey.addNohit(id, newNohit.Special);
         await this.nohitData.submitNohit(guildId, newNohit);
+        await this.nohitData.updateJourney(guildId, journey);
         await this.userData.updateUser(guildId, userId, user);
         return newNohit;
     }

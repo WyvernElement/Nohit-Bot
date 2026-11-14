@@ -203,6 +203,15 @@ class JsonNohitDataAccess {
         return this.journeys.get(guildId).get(numericId);
     }
 
+    async totalJourneys(guildId){
+        return this.journeys.get(guildId).size;
+    }
+
+    async updateJourney(guildId, newJourney){
+        this.journeys.get(guildId).set(newJourney.ID, newJourney);
+        this.saveJourneys(guildId);
+    }
+
     async getJourneyByData(guildId, userId, difficulty){
         for (const journey of this.journeys.get(guildId).values()) {
             const sameUser = String(journey.UserID) === String(userId);
