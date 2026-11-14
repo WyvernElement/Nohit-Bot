@@ -1,6 +1,51 @@
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
 
+function findBoss(difficulty, bossName){
+    if (!difficulty?.bosses){
+        return undefined;
+    }
+    return difficulty.bosses.find(boss => {
+        if (typeof boss === "string"){
+            return boss === bossName;
+        }
+        return boss?.name === bossName || boss?.textName === bossName;
+    });
+}
+
+function progressionOrder(difficulty, bossName){
+    const boss = findBoss(difficulty, bossName);
+    const order = Number(boss?.progressionOrder);
+    return Number.isFinite(order) ? order : Number.POSITIVE_INFINITY;
+}
+
+function compareNohits(difficulty, a, b){
+    const orderDiff = progressionOrder(difficulty, a.Boss) - progressionOrder(difficulty, b.Boss);
+    if (orderDiff !== 0){
+        return orderDiff;
+    }
+    return Number(a.ID) - Number(b.ID);
+}
+
+async function nohitsInProgressionOrder(guildId, difficulty, ids){
+    const nohits = [];
+    for (const id of ids){
+        nohits.push(await NohitService.lookup(guildId, id));
+    }
+    nohits.sort((a, b) => compareNohits(difficulty, a, b));
+    return nohits;
+}
+
+function verificationEmoji(nohit){
+    if (nohit.Verification === "Pending"){
+        return ":question:";
+    }
+    if (nohit.Verification === "Verified"){
+        return ":V_:";
+    }
+    return ":dq:";
+}
+
 async function run(message, args, client){
     const id = args[0];
     const iid = args[1] ?? message.author.id;
@@ -20,22 +65,20 @@ async function run(message, args, client){
 :question: = Submitted, yet to be reviewed\n`;
 
         await NohitService.updateJourneys(message.guildId);
-        for (const id of journey.NohitIDs){
-            const nohit = await NohitService.lookup(message.guildId, id);
-            const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? ":V_:" : ":dq:";
-            response += `\n${id} - ${nohit.Boss} - ${emoji}`;
+        const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
+        const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
+
+        for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs)){
+            response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
         }
 
-        if (journey.SpecialIDs){
+        if (journey.SpecialIDs?.length){
             response += "\n";
-            for (const id of journey.SpecialIDs){
-                const nohit = await NohitService.lookup(message.guildId, id);
-                const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? ":V_:" : ":dq:";
-                response += `\n${id} - ${nohit.Boss} - ${emoji}`;
+            for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.SpecialIDs)){
+                response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
             }
         }
 
-        const difficulty = await NohitService.findDifficulty(message.guildId, journey.Difficulty);
         const remaining = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
         response += `\n\n**__Totals:__**
 ${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.

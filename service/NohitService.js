@@ -2,6 +2,8 @@ const JsonNohitDataAccess = require("../dataaccess/JsonNohitDataAccess");
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const { Nohit } = require("../objects/Nohit");
 const { Difficulty } = require("../objects/Difficulty");
+const { Boss } = require("../objects/Boss");
+const {Journey} = require("../objects/Journey");
 
 class NohitService {
 
@@ -61,7 +63,10 @@ class NohitService {
         const id = existingNohit ? existingNohit.ID : (await this.totalNohits(guildId)) + 1;
         const newNohit = new Nohit(id, userId, resolved.standard, bossName, url, comment);
         const user = await this.userData.getUser(guildId, userId);
-        const journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
+        let journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
+        if(!journey){
+            journey = new Journey()
+        }
         journey.addNohit(guildId, id);
         await this.nohitData.submitNohit(guildId, newNohit);
         await this.userData.updateUser(guildId, userId, user);
@@ -71,7 +76,7 @@ class NohitService {
     async recomment(guildId, id, newComment){
         const nohit = await this.nohitData.getNohit(guildId, id);
         nohit.UserComment = newComment;
-        this.nohitData.submitNohit(guildId, nohit);
+        await this.nohitData.submitNohit(guildId, nohit);
     }
 
     async deleteNohit(guildId, id, difficulty, boss){
@@ -169,25 +174,33 @@ class NohitService {
         return difficulty;
     }
 
-    async addBoss(guildId, difficultyToken, bossName){
+    copyDifficulty(guildId, name, abbreviation, otherDifficulty){
+
+    }
+
+    async addBoss(guildId, difficultyToken, bossName, order, textName){
         if (typeof bossName !== "string" || bossName.trim() === "") {
+            return undefined;
+        }
+        if (typeof textName !== "string" || textName.trim() === "") {
+            return undefined;
+        }
+        const progressionOrder = Number(order);
+        if (!Number.isFinite(progressionOrder)) {
             return undefined;
         }
         const difficulty = this.findDifficulty(guildId, difficultyToken);
         if (!difficulty || difficulty.isModifier) {
             return undefined;
         }
-        const trimmedBoss = bossName.trim();
-        if (difficulty.hasBoss(trimmedBoss)) {
+        const trimmedBossName = bossName.trim();
+        if (difficulty.hasBoss(trimmedBossName)) {
             return { duplicate: true };
         }
-        difficulty.addBoss(trimmedBoss);
+        const boss = new Boss(trimmedBossName, progressionOrder, textName.trim());
+        difficulty.addBoss(boss);
         await this.nohitData.saveDifficulties(guildId);
         return difficulty;
-    }
-
-    async getUser(id){
-
     }
 
 }

@@ -3,6 +3,7 @@ class Difficulty{
     name;
     isModifier;
     bosses;
+    isSubmittable;
 
     constructor(name, abbreviation, isModifier){
         this.name = name;
@@ -35,8 +36,8 @@ class Difficulty{
         return false;
     }
 
-    hasBoss(boss){
-        return this.bosses.includes(boss);
+    hasBoss(name){
+        return this.bosses.some(boss => boss.name === name);
     }
 
     addModifier(modifier){
