@@ -28,7 +28,7 @@ addAlias("copydifficulty", ["cpd"]);
 addAlias("recomment", ["rewritecomment"]);
 addAlias("allowmodifier", ["allowmodifiers"]);
 addAlias("catalogue", ["cat"]);
-addAlias("catalogueall", "[catall]");
+addAlias("catalogueall", ["catall"]);
 addAlias("setup");
 
 service.setClient(client);

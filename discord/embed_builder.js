@@ -1,6 +1,7 @@
 const DiscordService = require("../service/DiscordService");
 
 const { EmbedBuilder} = require('discord.js');
+const {formatTimestamp} = require("./time_util");
 
 async function buildNohitEmbed(nohit, guildId){
     //takes in a nohit, returns an embed.
@@ -9,7 +10,7 @@ async function buildNohitEmbed(nohit, guildId){
     .setTitle(`${nohit.Boss} on ${nohit.Difficulty} mode`)
     .setURL(nohit.Url)
     .setAuthor({name: await DiscordService.getDisplayName(nohit.UserID, guildId), iconURL: await DiscordService.getProfilePicture(nohit.UserID, guildId)})
-    .setDescription(`ID: ${nohit.ID}\nSubmitted on: ${nohit.Timestamp}`)
+    .setDescription(`ID: ${nohit.ID}\nSubmitted on: ${formatTimestamp(nohit.Timestamp)}`)
     .addFields(
         {name: 'User Comment', value: nohit.UserComment},
         {name: nohit.Verification, value: nohit.JudgeComment},
@@ -23,7 +24,7 @@ async function constructFields(guildId, nohits, verified){
     for(const nohit of nohits){
         fields.push({
             name: `**\[${nohit.ID}\] ${await DiscordService.getDisplayName(nohit.UserID, guildId)}${!verified? ' - ' + resolveEmoji(nohit.Verification) : ''} **`,
-            value: `[Submitted: ${nohit.Timestamp}](${nohit.Url})`
+            value: `[Submitted: ${formatTimestamp(nohit.Timestamp)}](${nohit.Url})`
         });
     }
     return fields;
