@@ -39,6 +39,15 @@ class NohitService {
         return nohit;
     }
 
+    async catalogue(guildId, difficulty, boss, count, verified){
+        const resolved = this.resolveDifficulty(guildId, difficulty);
+        const difficultyName = resolved ? resolved.standard : difficulty;
+        const resolvedBoss = resolved ? this.resolveBoss(guildId, resolved.base, boss) : undefined;
+        const bossName = resolvedBoss?.textName ?? this.nohitData.getBoss(guildId, boss) ?? boss;
+        const nohitCatalogue = await this.nohitData.catalogue(guildId, difficultyName, bossName, count, verified);
+        return nohitCatalogue;
+    }
+
     async lookupJourney(guildId, id){
         const journey = await this.nohitData.getJourney(guildId, id);
         return journey;

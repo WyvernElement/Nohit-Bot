@@ -207,6 +207,21 @@ class JsonNohitDataAccess {
         return match;
     }
 
+    catalogue(guildId, difficulty, boss, count, verified){
+        let nohitsFound = [];
+        for(const nohit of this.nohits.get(guildId).values()){
+            const sameDifficulty = nohit.Difficulty === difficulty;
+            const sameBoss = nohit.Boss === boss;
+            if(sameBoss && sameDifficulty){
+                if(!verified || nohit.Verification === "Verified"){
+                    nohitsFound.push(nohit);
+                }
+            }
+        }
+        nohitsFound.sort((a, b) => Date.parse(b.Timestamp) - Date.parse(a.Timestamp));
+        return nohitsFound.slice(0, count);
+    }
+
     async getJourney(guildId, id) {
         const numericId = Number(id);
         return this.journeys.get(guildId).get(numericId);

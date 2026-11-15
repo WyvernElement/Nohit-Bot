@@ -40,7 +40,7 @@ async function run(message, args, client) {
     const parsed = parseSubmitArgs(args);
     if (!parsed) {
         return message.reply(
-            "Usage: `!submit <difficulty> <boss> <video url> [comment]` — one word per field, no spaces.\nExample: `!submit Death ks https://youtu.be/example firsttry`"
+            "Usage: `!submit <difficulty> <boss> <video url> [comment]` — one word per parameter, no spaces.\nExample: `!submit Death ks https://youtu.be/example first try`"
         );
     }
 
