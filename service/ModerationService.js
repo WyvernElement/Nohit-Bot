@@ -24,7 +24,7 @@ class ModerationService{
     }
 
     async getConfig(guildId){
-        return this.configData.getConfig(guildId);
+        return await this.configData.getConfig(guildId);
     }
 
 }

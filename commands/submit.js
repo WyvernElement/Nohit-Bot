@@ -1,5 +1,7 @@
 const { buildNohitEmbed } = require("../discord/embed_builder.js");
 const NohitService = require("../service/NohitService.js");
+const ModerationService = require("../service/ModerationService");
+const DiscordService = require("../service/DiscordService");
 
 function isAllowedVideoUrl(rawUrl) {
     let url;
@@ -37,6 +39,11 @@ function parseSubmitArgs(args) {
 }
 
 async function run(message, args, client) {
+    const config = await ModerationService.getConfig(message.guildId);
+    if(message.channel.id !== config.submissionChannel){
+        return message.reply(`This command can only be used in <#${config.submissionChannel}>!`);
+    }
+
     const parsed = parseSubmitArgs(args);
     if (!parsed) {
         return message.reply(
@@ -75,10 +82,29 @@ async function run(message, args, client) {
         ? `Resubmitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}). Verification was reset to Pending.`
         : `Submitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}).`;
 
+    if(config.submissionLogChannel){
+        const journey = await NohitService.lookupByUser(message.guildId,  nohit.UserID, nohit.Difficulty);
+        const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
+        const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
+        const remain = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
+
+        const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${nohit.Boss}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
+
+        await DiscordService.sendMessageInChannel(msg, config.submissionLogChannel);
+    }
+
     return message.reply({
         content: action,
         embeds: [replyPayload],
     });
+}
+
+function resolveLogString(remaining, difficultyText){
+    switch(remaining){
+        case 0: return `This was their final nohit on ${difficultyText}!!`;
+        case 1: return `They have 1 nohit remaining!!`;
+        default: return `They have ${remaining} nohits remaining!!`
+    }
 }
 
 module.exports = {
