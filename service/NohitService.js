@@ -124,8 +124,9 @@ class NohitService {
         if (!difficulty || typeof token !== "string") {
             return undefined;
         }
-        const aliased = this.nohitData.getBoss(guildId, token);
-        const names = aliased ? [token, aliased] : [token];
+        const lowerName = token.toLowerCase().replaceAll(' ', '');
+        const aliased = this.nohitData.getBoss(guildId, lowerName);
+        const names = aliased ? [token, lowerName, aliased] : [token, lowerName];
         return difficulty.bosses?.find(boss => names.includes(boss.name) || names.includes(boss.textName));
     }
 
@@ -233,7 +234,7 @@ class NohitService {
         if (!difficulty || difficulty.isModifier) {
             return undefined;
         }
-        const trimmedBossName = bossName.trim();
+        const trimmedBossName = bossName.trim().toLowerCase();
         if (difficulty.hasBoss(trimmedBossName)) {
             return { duplicate: true };
         }

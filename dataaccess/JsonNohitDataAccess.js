@@ -11,7 +11,7 @@ class JsonNohitDataAccess {
         nohitsJsonPath = "/Backup/NohitsData.json",
         journeysJsonPath = "/Backup/JourneysData.json",
         difficultiesJsonPath = "/Backup/DifficultiesData.json",
-        aliasesJsonPath = "../Backup/AliasesData.json"
+        aliasesJsonPath = "/Backup/AliasesData.json"
     ) {
         this.dataFolderPath = dataFolderPath;
         this.nohitsJsonPath = nohitsJsonPath;
@@ -96,7 +96,7 @@ class JsonNohitDataAccess {
         if (typeof boss === "string") {
             return new Boss(boss.replace(/ /g, ""), undefined, boss);
         }
-        return new Boss(boss.name, boss.progressionOrder, boss.textName ?? boss.name);
+        return new Boss(boss.name.toLowerCase(), boss.progressionOrder, boss.textName ?? boss.name);
     }
 
     importDifficulties() {
