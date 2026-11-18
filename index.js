@@ -23,6 +23,7 @@ addAlias("overview", "o");
 addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("addboss", ["ab"]);
+addAlias("addalias", ["aa"]);
 addAlias("createdifficulty", ["cd"]);
 addAlias("copydifficulty", ["cpd"]);
 addAlias("recomment", ["rewritecomment"]);
