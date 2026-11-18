@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const {Nohit} = require("../objects/Nohit");
+const {ServerConfig} = require("../objects/ServerConfig");
 
 class JsonConfigDataAccess {
 

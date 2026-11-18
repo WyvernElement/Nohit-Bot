@@ -20,3 +20,5 @@ class ServerConfig{
 
 
 }
+
+module.exports = {ServerConfig};

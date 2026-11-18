@@ -1,5 +1,6 @@
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const JsonConfigDataAccess = require("../dataaccess/JsonConfigDataAccess");
+const {ServerConfig} = require("../objects/ServerConfig");
 
 class ModerationService{
 
@@ -19,7 +20,11 @@ class ModerationService{
         else{
             config.reconfigure(submissionChannel, submissionLogChannel, journeyLogChannel);
         }
-        await this.configData.setConfig(config);
+        await this.configData.setConfig(guildId, config);
+    }
+
+    async getConfig(guildId){
+        return this.configData.getConfig(guildId);
     }
 
 }

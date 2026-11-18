@@ -32,6 +32,7 @@ addAlias("allowmodifier", ["allowmodifiers"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
 addAlias("setup");
+addAlias("config");
 
 service.setClient(client);
 client.on('messageCreate', async (message) => {
