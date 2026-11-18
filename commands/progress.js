@@ -1,5 +1,16 @@
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
+const {v, dq} = require("../discord/emoji_util");
+
+function verificationEmoji(nohit){
+    if (nohit.Verification === "Pending"){
+        return ":question:";
+    }
+    if (nohit.Verification === "Verified"){
+        return v;
+    }
+    return dq;
+}
 
 function findBoss(difficulty, bossName){
     if (!difficulty?.bosses){
@@ -31,16 +42,6 @@ async function nohitsInProgressionOrder(guildId, difficulty, ids){
     return nohits;
 }
 
-function verificationEmoji(nohit){
-    if (nohit.Verification === "Pending"){
-        return ":question:";
-    }
-    if (nohit.Verification === "Verified"){
-        return ":V_:";
-    }
-    return ":dq:";
-}
-
 async function run(message, args, client){
     const id = args[0];
     const iid = args[1] ?? message.author.id;
@@ -55,8 +56,8 @@ async function run(message, args, client){
     }
     else{
         let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
-:V_: = Verified
-:dq: = Disqualied, needs redo
+${v} = Verified
+${dq} = Disqualified, needs redo
 :question: = Submitted, yet to be reviewed\n`;
 
         await NohitService.updateJourneys(message.guildId);

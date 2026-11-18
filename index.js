@@ -19,6 +19,7 @@ const COMMANDS = new Map();
 addAlias("document", ["doc"]); // Remember to enclose any alias that's longer than 1 letter in an array too!
 addAlias("lookup", "l");
 addAlias("progress", "p");
+addAlias("remaining", ["rem"]);
 addAlias("overview", "o");
 addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
