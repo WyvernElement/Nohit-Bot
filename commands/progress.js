@@ -54,7 +54,8 @@ async function run(message, args, client){
         }
     }
     else{
-        let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
+        let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
+ID: *${journey.ID}*${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
 :V_: = Verified
 :dq: = Disqualied, needs redo
 :question: = Submitted, yet to be reviewed\n`;

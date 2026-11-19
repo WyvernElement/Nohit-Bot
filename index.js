@@ -1,6 +1,7 @@
 require('dotenv').config();
 const{Client, GatewayIntentBits, ActivityType} = require('discord.js');
 const service = require('./service/DiscordService.js');
+const NohitService = require("./service/NohitService.js");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates] });
 client.on('clientReady', () => {
@@ -32,26 +33,45 @@ addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
 addAlias("setup");
 
+const JUDGING = new Map();
+addJudgeAlias("judgerecomment", ["jrecomment", "jr"]);
+addJudgeAlias("review", "r");
+
 service.setClient(client);
 client.on('messageCreate', async (message) => {
-    if(message.author.bot){
-        return;
+  if(message.author.bot){
+      return;
+  }
+  console.log(message.content);
+  if(message.content.startsWith("!")){
+    const args = message.content.slice(1).split(" ");
+    const commandAlias = args.shift().toLowerCase();
+    if(COMMANDS.has(commandAlias)){
+      try{
+          const commandName = COMMANDS.get(commandAlias);
+          const command = require(`./commands/${commandName}.js`);
+          await command.run(message, args, client);
+      }
+      catch(err){
+          console.log(err);
+      }
     }
-    if(message.content.startsWith("!")){
-        const args = message.content.slice(1).split(" ");
-        const commandAlias = args.shift().toLowerCase();
-        if(COMMANDS.has(commandAlias)){
+    if(JUDGING.has(commandAlias)){
+      if (!NohitService.checkJudge(message.guildId, message.author.id)){
+        message.reply("You're not a judge lol get outta here")
+      }
+      else{
         try{
-            const commandName = COMMANDS.get(commandAlias);
-            const command = require(`./commands/${commandName}.js`);
-            await command.run(message, args, client);
+          const commandName = JUDGING.get(commandAlias);
+          const command = require(`./commands/judging/${commandName}.js`);
+          await command.run(message, args, client);
         }
         catch(err){
-            console.log(err);
+          console.log(err);
         }
+      }
     }
-    }
-    
+  }
 });
 
 function addAlias(command, aliases){
@@ -59,6 +79,15 @@ function addAlias(command, aliases){
   if(aliases != undefined){
     for(const alias of aliases){
       COMMANDS.set(alias, command);
+    }
+  }
+}
+
+function addJudgeAlias(command, aliases){
+  JUDGING.set(command, command);
+  if(aliases != undefined){
+    for(const alias of aliases){
+      JUDGING.set(alias, command);
     }
   }
 }

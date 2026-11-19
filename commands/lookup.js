@@ -80,5 +80,6 @@ async function parseArguments(guild, args, author){
 }
 
 module.exports = {
-    run
+    run,
+    parseArguments
 }

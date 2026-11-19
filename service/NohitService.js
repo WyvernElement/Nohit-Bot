@@ -173,6 +173,10 @@ class NohitService {
         return undefined;
     }
 
+    checkJudge(guildId, id){
+        return this.userData.getJudge(guildId, id) ?? false;
+    }
+
     createDifficulty(guildId, name, abbreviation, isModifier){
         if (typeof name !== "string" || name.trim() === "") {
             return undefined;

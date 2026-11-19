@@ -8,6 +8,7 @@ class Journey{
     V;
     DQ;
     Pending;
+    Completed;
 
     constructor(id, userid, difficulty){
         this.ID = id;
@@ -18,6 +19,7 @@ class Journey{
         this.V = 0;
         this.DQ = 0;
         this.Pending = 0;
+        this.Completed = false;
     }
 
     addNohit(id, special){

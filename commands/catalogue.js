@@ -17,6 +17,9 @@ function parseSubmitArgs(args) {
 async function run(message, args, client){
     const parsed = parseSubmitArgs(args);
     if (!parsed){
+        if (Math.random() < 0.25){
+            return message.reply(":cat:");
+        }
         return message.reply(
             "Usage: `!catalogue <difficulty> <boss> <count (optional)>` — one word per field, no spaces.\nExample: `!catalogue death KingSlime 10`"
         );

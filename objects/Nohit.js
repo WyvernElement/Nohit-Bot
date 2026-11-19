@@ -9,6 +9,7 @@ class Nohit{
     Verification;
     JudgeComment;
     JudgeID;
+    PreviousReviews = [];
     get Special(){
         return ["Boss Rush"].includes(this.Boss);
     }
@@ -32,6 +33,26 @@ class Nohit{
             const cleanedLink = url.split("?si=")[0].split("&si=")[0];  // removes stupid tracker from links automatically
             this.Url = cleanedLink;
         }
+    }
+
+    review(verification, judgeId, comment, messageId){
+        this.PreviousReviews.unshift([this.Verification, this.JudgeID, this.JudgeComment, messageId]);
+        this.Verification = verification;
+        this.JudgeID = judgeId;
+        this.JudgeComment = comment;
+    }
+
+    undo(judgeId){
+        let previousState = ["", 0, "", 0];
+        let reviewsOverturned = [];
+        do {
+            previousState = this.PreviousReviews.shift();
+            reviewsOverturned.push(previousState[3]);
+        } while (this.PreviousReviews.length > 0 && judgeId != previousState[1]);
+        this.Verification = previousState[0];
+        this.JudgeID = previousState[1];
+        this.JudgeComment = previousState[2];
+        return reviewsOverturned;
     }
 }
 module.exports = {Nohit}

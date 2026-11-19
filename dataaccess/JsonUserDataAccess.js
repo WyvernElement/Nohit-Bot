@@ -76,14 +76,18 @@ class JsonUserDataAccess{
         return this.users.get(guildId).get(id);
     }
 
+    getJudge(guildId, id){
+        return this.judges.get(guildId).get(id);
+    }
+
     async saveUsers(guildId){
-            const items = Array.from(this.users.get(guildId).values());
-            fs.writeFileSync(this.userPath(guildId), JSON.stringify(items, null, 2));
+        const items = Array.from(this.users.get(guildId).values());
+        fs.writeFileSync(this.userPath(guildId), JSON.stringify(items, null, 2));
     }
 
     async saveJudges(guildId){
-            const items = Array.from(this.judges.get(guildId).values());
-            fs.writeFileSync(this.judgePath(guildId), JSON.stringify(items, null, 2));
+        const items = Array.from(this.judges.get(guildId).values());
+        fs.writeFileSync(this.judgePath(guildId), JSON.stringify(items, null, 2));
     }
 
     async updateUser(guildId, id, user){

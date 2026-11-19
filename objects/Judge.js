@@ -3,6 +3,9 @@ class Judge{
     DefaultAlias;
     Aliases;
     Quote;
+    Emoji = ":tada:";
+    Next;
+    Prev = [];
 
     constructor(id, alias, aliases, quote){
         this.JudgeID = id;

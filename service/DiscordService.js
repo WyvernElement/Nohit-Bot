@@ -10,6 +10,15 @@ class DiscordService{
         this.client = client;
     }
 
+    async getMember(userId){
+        return await this.client.users.fetch(userId);
+    }
+
+    async getDM(userId){
+        const member = await this.getMember(userId);
+        return await member.createDM();
+    }
+
     async getDisplayName(userId, guildId){
         /*const guild = await this.client.guilds.fetch(guildId);
         const member = await guild.members.fetch(userId);*/
