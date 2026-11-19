@@ -1,5 +1,6 @@
 const DiscordService = require("../../service/DiscordService");
 const NohitService = require("../../service/NohitService.js");
+const {v, dq} = require("../../discord/emoji_util");
 
 async function run(message, args, client) {
 
@@ -41,8 +42,8 @@ async function run(message, args, client) {
 
 
 
-    const v = parseVerification(args.shift());
-    if (!v){
+    const flag = parseVerification(args.shift());
+    if (!flag){
         return message.reply("To judge a nohit use v or dq. Or, I guess, the long forms, if you're weird")
     }
 
@@ -50,11 +51,11 @@ async function run(message, args, client) {
     const judge = NohitService.checkJudge(message.guildId, message.author.id);
 
     const comment = args.join(" ");
-    const ver = v === "Verified";
-    const review = await member.send(`**[${parsed.ID}]** ${(ver) ? ":V_:" : "dq"} Your **${parsed.Boss}** nohit on **${parsed.Difficulty}** has been ${v.toLowerCase()} by __${message.author.displayName}__${(ver) ? "!!" : "."} ${judge.Emoji}
+    const ver = flag === "Verified";
+    const review = await member.send(`**[${parsed.ID}]** ${(ver) ? v : dq} Your **${parsed.Boss}** nohit on **${parsed.Difficulty}** has been ${flag.toLowerCase()} by __${message.author.displayName}__${(ver) ? "!!" : "."} ${judge.Emoji}
 ${(comment.length > 0) ? `They also left a comment for you: "${comment}"` : "No comment was left."}`);
 
-    parsed.review(v, message.author.id, comment, review.id);
+    parsed.review(flag, message.author.id, comment, review.id);
     await NohitService.nohitData.submitNohit(message.guildId, parsed);
 
     judge.Prev.unshift(parsed.ID);
@@ -116,8 +117,8 @@ async function parseNohit(guild, args, author){
         if (next.includes(args[0].toLowerCase())){
             args.shift();                
         }
-        const v = ["v", "verification", "d", "dq", "disqualified"]
-        if (v.includes(args[0].toLowerCase())){
+        const verific = ["v", "verification", "d", "dq", "disqualified"]
+        if (verific.includes(args[0].toLowerCase())){
             if (nextNohit.Verification != "Pending"){
                 return await findNext(guild, journey) ?? { completed: true };
             }

@@ -1,4 +1,6 @@
 const DiscordService = require("../service/DiscordService");
+const NohitService = require("../service/NohitService.js");
+const {v, dq} = require("../discord/emoji_util");
 
 const { EmbedBuilder} = require('discord.js');
 const {formatTimestamp} = require("./time_util");
@@ -42,6 +44,50 @@ async function buildCatalogueEmbed (guildId, nohits, verified){
     return embed;
 }
 
+async function journeyFields(guildId, journeys){
+    let fields = [];
+    for (const j of journeys){
+        let special = "";
+        for (const s of j.SpecialIDs){
+            const nohit = await NohitService.lookup(guildId, s);
+            const emoji = nohit.Verification === "Pending" ? ':question:' : nohit.Verification === "Verified" ? v : dq;
+            special += `\n[${nohit.Boss}](<${nohit.Url}>) - ${emoji}`
+        }
+        const link = j.Playlist;
+            if (link != undefined){
+                special += `\n[Playlist](<${link}>)`;
+            }
+        fields.push({
+            name: `**[${j.ID}] - ${j.Difficulty}**`,
+            value: `${(j.V > 0) ? `\nVerified: ${j.V}` : ""}${(j.DQ > 0) ? `\nDisqualified: ${j.DQ}` : ""}${(j.Pending > 0) ? `\nPending: ${j.Pending}` : ""}${special}`
+        })
+    }
+    return fields;
+}
+
+async function buildOverviewEmbed(guildId, user){
+    let journeys = [];
+    let total = 0;
+    let vs = 0;
+    let dqs = 0;
+    for (const [difficulty, id] of user.OwnedNohits){
+        const journey = await NohitService.lookupJourney(guildId, id);
+        total += journey.getTotal();
+        vs += journey.V;
+        dqs += journey.DQ;
+        journeys.push(journey);
+    }
+    const embed = new EmbedBuilder()
+    .setColor(Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, '0'))
+    .setTitle(`Overview for ${await DiscordService.getDisplayName(user.ID, guildId)}`)
+    .setDescription(`This user has submitted **__${total}__** total nohits, out of which:\n**${vs}** have been verified,\n**${dqs}** have been disqualified,\nand **${total - vs - dqs}** are still pending review.`)
+    .addFields(
+        await journeyFields(guildId, journeys)
+    )
+    .setFooter({text: `This user is pretty cool!`});
+    return embed;
+}
+
 function getColor(Verification){
     switch(Verification){
         case "Verified":
@@ -74,4 +120,4 @@ async function getFooter(nohit, guildId){
 }
 
 
-module.exports = {buildNohitEmbed, buildCatalogueEmbed};
+module.exports = {buildNohitEmbed, buildCatalogueEmbed, buildOverviewEmbed};
