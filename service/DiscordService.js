@@ -33,5 +33,10 @@ class DiscordService{
         return member.displayAvatarURL({dynamic: true});
     }
 
+    async sendMessageInChannel(message, channelId){
+        const channel = await this.client.channels.fetch(channelId);
+        await channel.send(message);
+    }
+
 }
 module.exports = new DiscordService();
