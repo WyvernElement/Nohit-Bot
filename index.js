@@ -48,11 +48,12 @@ client.on('messageCreate', async (message) => {
   if(message.content.startsWith("!")){
     const args = message.content.slice(1).split(" ");
     const commandAlias = args.shift().toLowerCase();
+    const user = NohitService.userData.getUser(message.guildId, message.author.id);
     if(COMMANDS.has(commandAlias)){
       try{
           const commandName = COMMANDS.get(commandAlias);
           const command = require(`./commands/${commandName}.js`);
-          await command.run(message, args, client);
+          await command.run(message, args, client, user);
       }
       catch(err){
           console.log(err);
@@ -66,7 +67,7 @@ client.on('messageCreate', async (message) => {
         try{
           const commandName = JUDGING.get(commandAlias);
           const command = require(`./commands/judging/${commandName}.js`);
-          await command.run(message, args, client);
+          await command.run(message, args, client, user);
         }
         catch(err){
           console.log(err);

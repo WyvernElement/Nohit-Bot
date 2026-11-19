@@ -1,6 +1,6 @@
 const NohitService = require("../service/NohitService.js");
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     const parsed = await parseArgs(message.guildId, args);
     if (parsed.badargs){
         return message.reply("Usage: `!addalias <boss identifier (no spaces)> <list of aliases>`\nExample: `!addalias KingSlime ks slimeking`");

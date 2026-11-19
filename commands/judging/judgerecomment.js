@@ -1,6 +1,6 @@
 const NohitService = require("../../service/NohitService.js");
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
     const parsed = await parseArgs(message.guildId, args, message.author.id);
 
     if (parsed.missing){

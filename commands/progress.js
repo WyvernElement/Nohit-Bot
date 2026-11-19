@@ -42,16 +42,16 @@ async function nohitsInProgressionOrder(guildId, difficulty, ids){
     return nohits;
 }
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     const id = args[0];
     const iid = args[1] ?? message.author.id;
     const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, id, iid) ?? await NohitService.lookupByUser(message.guildId, iid, id);
     if (journey === undefined){
-        if (NohitService.resolveDifficulty(message.guildId, id) === undefined && NohitService.resolveDifficulty(message.guildId, iid) === undefined){
-        return message.reply("Try again, love. You're not making sense here.");
+        if (NohitService.resolveDifficulty(message.guildId, id) || NohitService.resolveDifficulty(message.guildId, iid)){
+            return message.reply(`${iid === message.author.id ? "You haven't": "That user hasn't"} submitted any nohits for that difficulty.`);
         }
         else{
-            return message.reply(`${iid === message.author.id ? "You haven't": "That user hasn't"} submitted any nohits for that difficulty.`);
+            return message.reply("Try again, love. You're not making sense here.");
         }
     }
     else{

@@ -1,7 +1,7 @@
 const { buildNohitEmbed } = require("../discord/embed_builder.js");
 const NohitService = require("../service/NohitService.js");
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     const parsed = await parseArguments(message.guildId, args, message.author.id);
     if (parsed.error === "empty"){
         return message.reply("I can't work with nothing, c'mon.");

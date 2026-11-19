@@ -1,6 +1,6 @@
 const NohitService = require("../service/NohitService.js");
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     const id = args[0];
     const iid = args[1];
     let nohit = await NohitService.lookup(message.guildId, id)

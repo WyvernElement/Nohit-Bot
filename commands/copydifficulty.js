@@ -13,7 +13,7 @@ function parseCopyDifficultyArgs(args) {
     return { name, abbreviation, source };
 }
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
     const parsed = parseCopyDifficultyArgs(args);
     if (!parsed) {
         return message.reply(

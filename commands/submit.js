@@ -38,7 +38,7 @@ function parseSubmitArgs(args) {
     return { difficulty, boss, url, comment };
 }
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
     const config = await ModerationService.getConfig(message.guildId);
     if(message.channel.id !== config.submissionChannel){
         return message.reply(`This command can only be used in <#${config.submissionChannel}>!`);

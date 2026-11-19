@@ -12,7 +12,7 @@ function parseCreateDifficultyArgs(args) {
     return undefined;
 }
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
     const parsed = parseCreateDifficultyArgs(args);
     if (!parsed) {
         return message.reply(

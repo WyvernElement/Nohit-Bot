@@ -1,6 +1,6 @@
 const NohitService = require("../service/NohitService.js");
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     await NohitService.nohitData.buildJourneysFromNohitBotv2(message.guildId);
     await NohitService.addJourneyAssociation(message.guildId);
     return message.reply("Journey rework built;\ninitialized successfully.");

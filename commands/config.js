@@ -27,7 +27,7 @@ function parseConfigArgs(args) {
     return { submissionChannel, submissionLogChannel, journeyLogChannel };
 }
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
     const parsed = parseConfigArgs(args);
     if (!parsed) {
         return message.reply(

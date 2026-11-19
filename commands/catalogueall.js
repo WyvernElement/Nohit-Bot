@@ -14,7 +14,7 @@ function parseSubmitArgs(args) {
     return { difficulty, boss, count };
 }
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     const parsed = parseSubmitArgs(args);
     if (!parsed){
         return message.reply(

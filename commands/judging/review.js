@@ -2,7 +2,7 @@ const DiscordService = require("../../service/DiscordService");
 const NohitService = require("../../service/NohitService.js");
 const {v, dq} = require("../../discord/emoji_util");
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
 
     const parsed = await parseNohit(message.guildId, args, message.author.id);
 

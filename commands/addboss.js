@@ -14,7 +14,7 @@ function parseAddBossArgs(args) {
     return { difficulty, id, order, boss };
 }
 
-async function run(message, args, client) {
+async function run(message, args, client, user) {
     const parsed = parseAddBossArgs(args);
     if (!parsed) {
         return message.reply(

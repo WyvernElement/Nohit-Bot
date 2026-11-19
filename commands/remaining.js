@@ -1,7 +1,7 @@
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
 
-async function run(message, args, client){
+async function run(message, args, client, user){
     const id = args[0];
     const iid = args[1] ?? message.author.id;
     const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, id, iid) ?? await NohitService.lookupByUser(message.guildId, iid, id);
