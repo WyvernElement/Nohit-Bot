@@ -17,6 +17,7 @@ client.on('clientReady', () => {
 });
 
 const COMMANDS = new Map();
+addAlias("help", "h");
 addAlias("document", ["doc"]); // Remember to enclose any alias that's longer than 1 letter in an array too!
 addAlias("lookup", "l");
 addAlias("progress", "p");
@@ -24,21 +25,26 @@ addAlias("remaining", ["rem"]);
 addAlias("overview", "o");
 addAlias("nohitstats", ["stats", "stat"]);
 addAlias("submit", "s");
+addAlias("requestreview", ["rr"]);
 addAlias("playlist", ["pl", "addplaylist"]);
-addAlias("addboss", ["ab"]);
-addAlias("addalias", ["aa"]);
-addAlias("createdifficulty", ["cd"]);
-addAlias("copydifficulty", ["cpd"]);
 addAlias("recomment", ["rewritecomment"]);
-addAlias("allowmodifier", ["allowmodifiers"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
-addAlias("setup");
-addAlias("config");
 
 const JUDGING = new Map();
 addJudgeAlias("judgerecomment", ["jrecomment", "jr"]);
 addJudgeAlias("review", "r");
+addJudgeAlias("delete", "d");
+addJudgeAlias("addalias", ["aa"]);
+addJudgeAlias("allowmodifier", ["allowmodifiers", "am"]);
+
+const ADMIN = new Map();
+addAdminAlias("createdifficulty", ["cd"]);
+addAdminAlias("copydifficulty", ["cpd"]);
+addAdminAlias("config");
+addAdminAlias("addreviewchannel", ["arc"]);
+addAdminAlias("setup");
+addAdminAlias("addboss", ["ab"]);
 
 service.setClient(client);
 client.on('messageCreate', async (message) => {
@@ -75,6 +81,21 @@ client.on('messageCreate', async (message) => {
         }
       }
     }
+    if(ADMIN.has(commandAlias)){
+      if (false){
+        message.reply("only registered bot admins can use this command")
+      }
+      else{
+        try{
+          const commandName = ADMIN.get(commandAlias);
+          const command = require(`./commands/admin/${commandName}.js`);
+          await command.run(message, args, client, user);
+        }
+        catch(err){
+          console.log(err);
+        }
+      }
+    }
   }
 });
 
@@ -92,6 +113,15 @@ function addJudgeAlias(command, aliases){
   if(aliases != undefined){
     for(const alias of aliases){
       JUDGING.set(alias, command);
+    }
+  }
+}
+
+function addAdminAlias(command, aliases){
+  ADMIN.set(command, command);
+  if(aliases != undefined){
+    for(const alias of aliases){
+      ADMIN.set(alias, command);
     }
   }
 }

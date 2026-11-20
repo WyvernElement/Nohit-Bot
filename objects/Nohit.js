@@ -20,7 +20,7 @@ class Nohit{
         this.Difficulty = difficulty;
         this.Boss = boss;
         this.setURL(url);
-        this.UserComment = comment;
+        this.UserComment = comment ?? "No user comment";
         const now = new Date();
         this.Timestamp = now.toISOString();
         this.Verification = "Pending";
@@ -39,7 +39,12 @@ class Nohit{
         this.PreviousReviews.unshift([this.Verification, this.JudgeID, this.JudgeComment, messageId]);
         this.Verification = verification;
         this.JudgeID = judgeId;
-        this.JudgeComment = comment;
+        if (!comment || comment === ""){
+            this.JudgeComment = "No judge comment";
+        }
+        else{
+            this.JudgeComment = comment;
+        }
     }
 
     undo(judgeId){

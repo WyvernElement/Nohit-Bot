@@ -1,23 +1,22 @@
-const NohitService = require("../service/NohitService.js");
+const NohitService = require("../../service/NohitService.js");
+const ModerationService = require("../../service/ModerationService");
 
 function parseCopyDifficultyArgs(args) {
-    if (args.length !== 3) {
-        return undefined;
-    }
     const name = args[0];
     const abbreviation = args[1];
-    const source = args[2];
-    if (!name || !abbreviation || !source) {
+    const bias = args[2];
+    const source = args[3];
+    if (!name || !abbreviation || !bias || !source) {
         return undefined;
     }
-    return { name, abbreviation, source };
+    return { name, abbreviation, bias, source };
 }
 
 async function run(message, args, client, user) {
     const parsed = parseCopyDifficultyArgs(args);
     if (!parsed) {
         return message.reply(
-            "Usage: `!copydifficulty <name> <abbreviation> <source>` — one word per field, no spaces.\nExample: `!copydifficulty Malice M Death`"
+            "Usage: `!copydifficulty <name> <abbreviation> <bias> <source>` — one word per field, no spaces.\nExample: `!copydifficulty Malice M Calamity Death`"
         );
     }
 
@@ -26,11 +25,18 @@ async function run(message, args, client, user) {
         return message.reply(`No difficulty matching **${parsed.source}** was found.`);
     }
 
+    const config = await ModerationService.getConfig(message.guildId)
+    const parsedBias = config.reviewChannels.keys().find(e => e.includes(parsed.bias))
+    if (!parsedBias) {
+        return message.reply(`The bias **${parsed.bias}** is incomprehensible.`);
+    }
+
     const result = NohitService.copyDifficulty(
         message.guildId,
         parsed.name,
         parsed.abbreviation,
-        parsed.source
+        parsed.source,
+        parsedBias
     );
 
     if (result === undefined) {
@@ -41,6 +47,9 @@ async function run(message, args, client, user) {
     }
     if (result.conflict === "abbreviation") {
         return message.reply(`The abbreviation **${parsed.abbreviation}** is already in use.`);
+    }
+    if (result.conflict === "bias") {
+        return message.reply(`The bias **${parsed.bias}** is incomprehensible.`);
     }
 
     return message.reply(

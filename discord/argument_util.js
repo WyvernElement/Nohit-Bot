@@ -4,15 +4,19 @@ function parseForKeywords(guild, args){
     let ID;
     let num;
     for (let i = 0; i < args.length; i++){
-        if (Number.isFinite(Number(args[i]))){
-            const val = args.splice(i--, 1)[0];
+        const val = args[i].replace(/<@|>/g, "");
+        if (Number.isFinite(Number(val))){
             if (!ID){
                 if(NohitService.userData.users.get(guild).has(val)){
-                    ID = ID ?? val;
+                    ID = val;
+                    args.splice(i--, 1);
                     continue;
                 }
             }
-            num = num ?? val;
+            if (!num){
+                num = val;
+                args.splice(i--, 1);
+            }
         }
     }
 

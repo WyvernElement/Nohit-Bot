@@ -88,6 +88,14 @@ async function run(message, args, client, user) {
         const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${nohit.Boss}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
 
         await DiscordService.sendMessageInChannel(msg, config.submissionLogChannel);
+
+        if (remain === 0){
+            const judges = Array.from(NohitService.userData.judges.get(message.guildId).values());
+            const randJudge = judges[Math.floor(Math.random() * judges.length)];
+            const msg = `<@${nohit.UserID}> has completed their nohit journey on **${nohit.Difficulty}** mode!! :tada:\nNow to wait 2.2 billion years for ${randJudge.DefaultAlias} to ${randJudge.Quote}, enjoy the waiting room! ${randJudge.Emoji}`;
+
+            await DiscordService.sendMessageInChannel(msg, config.journeyLogChannel);
+        }
     }
 
     return message.reply({

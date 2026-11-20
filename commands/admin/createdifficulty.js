@@ -1,4 +1,5 @@
-const NohitService = require("../service/NohitService.js");
+const NohitService = require("../../service/NohitService.js");
+const ModerationService = require("../../service/ModerationService");
 
 function parseBoolean(value) {
     const normalized = String(value).trim().toLowerCase();
@@ -12,31 +13,36 @@ function parseBoolean(value) {
 }
 
 function parseCreateDifficultyArgs(args) {
-    if (args.length !== 3) {
-        return undefined;
-    }
     const name = args[0];
     const abbreviation = args[1];
     const isModifier = parseBoolean(args[2]);
+    const bias = args[3];
     if (isModifier === undefined || !name || !abbreviation) {
         return undefined;
     }
-    return { name, abbreviation, isModifier };
+    return { name, abbreviation, isModifier, bias };
 }
 
 async function run(message, args, client, user) {
     const parsed = parseCreateDifficultyArgs(args);
     if (!parsed) {
         return message.reply(
-            "Usage: `!createdifficulty <name> <abbreviation> <isModifier>` — one word per field, no spaces.\nExample: `!createdifficulty Death D false` or `!createdifficulty Shroomed S true`"
+            "Usage: `!createdifficulty <name> <abbreviation> <isModifier> <bias>` — one word per field, no spaces.\nExample: `!createdifficulty Death D false Calamity` or `!createdifficulty Shroomed S true`"
         );
+    }
+
+    const config = await ModerationService.getConfig(message.guildId)
+    const parsedBias = config.reviewChannels.keys().find(e => e.includes(parsed.bias))
+    if (!parsedBias) {
+        return message.reply(`The bias **${parsed.bias}** is incomprehensible.`);
     }
 
     const result = NohitService.createDifficulty(
         message.guildId,
         parsed.name,
         parsed.abbreviation,
-        parsed.isModifier
+        parsed.isModifier,
+        parsedBias
     );
 
     if (result === undefined) {

@@ -250,7 +250,7 @@ class NohitService {
         return this.userData.getJudge(guildId, id) ?? false;
     }
 
-    createDifficulty(guildId, name, abbreviation, isModifier){
+    createDifficulty(guildId, name, abbreviation, isModifier, bias){
         if (typeof name !== "string" || name.trim() === "") {
             return undefined;
         }
@@ -267,12 +267,12 @@ class NohitService {
                 return { conflict: "abbreviation" };
             }
         }
-        const difficulty = new Difficulty(trimmedName, trimmedAbbrev, Boolean(isModifier));
+        const difficulty = new Difficulty(trimmedName, trimmedAbbrev, Boolean(isModifier), bias);
         this.nohitData.addDifficulty(guildId, difficulty);
         return difficulty;
     }
 
-    copyDifficulty(guildId, name, abbreviation, otherDifficulty){
+    copyDifficulty(guildId, name, abbreviation, otherDifficulty, bias){
         if (typeof name !== "string" || name.trim() === ""){
             return undefined;
         }
@@ -290,7 +290,7 @@ class NohitService {
             }
         }
         const otherDiff = this.findDifficulty(guildId, otherDifficulty);
-        const difficulty = new Difficulty(trimmedName, trimmedAbbrev, false);
+        const difficulty = new Difficulty(trimmedName, trimmedAbbrev, false, bias);
         difficulty.copyAdd(otherDiff);
         this.nohitData.addDifficulty(guildId, difficulty);
         return difficulty;

@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
 const {v, dq} = require("../discord/emoji_util");
@@ -14,8 +17,8 @@ async function buildNohitEmbed(nohit, guildId){
     .setAuthor({name: await DiscordService.getDisplayName(nohit.UserID, guildId), iconURL: await DiscordService.getProfilePicture(nohit.UserID, guildId)})
     .setDescription(`ID: ${nohit.ID}\nSubmitted on: ${formatTimestamp(nohit.Timestamp)}`)
     .addFields(
-        {name: 'User Comment', value: nohit.UserComment},
-        {name: nohit.Verification, value: nohit.JudgeComment},
+        {name: 'User Comment', value: (nohit.UserComment === "") ? "No user comment" : nohit.UserComment},
+        {name: `${nohit.Verification} ${(nohit.Verification === "Pending") ? "verification": ""}`, value: (nohit.JudgeComment === "Pending") ? "No judge comment" : nohit.JudgeComment},
     )
     .setFooter({text: `${await getFooter(nohit, guildId)}`});
     return embed;
@@ -88,6 +91,61 @@ async function buildOverviewEmbed(guildId, user){
     return embed;
 }
 
+async function commands(judge, admin){
+    const commandDir = path.join(__dirname, "../commands")
+    const fields = [];
+    for (const dir of fs.readdirSync(commandDir)){
+        const name = path.parse(path.join(commandDir, dir)).name
+        if (name != "admin" && name != "judging" && name != "help"){
+            const command  = require('../commands/' + name);
+            fields.push({
+                name: name,
+                value: command.Description ?? "No description provided"
+            });
+        }
+    }
+    return fields;
+}
+
+async function reorder(fields){
+    const order = [
+        "submit",
+        "requestreview",
+        "lookup",
+        "progress",
+        "remaining",
+        "document",
+        "recomment",
+        "playlist",
+        "overview",
+        "catalogue",
+        "catalogueall",
+        "nohitstats"
+    ];
+    const reorder = order;
+    for (const item of fields){
+        const index = order.indexOf(item.name);
+        if (index === -1){
+            item.value = "No index provided"
+            reorder.push(item);
+        }
+        else{
+            reorder[index] = item;
+        }
+    }
+    return reorder;
+}
+
+async function buildHelpEmbed(judge, admin){
+    const embed = new EmbedBuilder()
+    .setColor(0xFF0000)
+    .setTitle(`Click here for a complete list of commands, their descriptions, and how to use them!`)
+    .addFields(
+        await reorder(await commands(judge, admin))
+    )
+    return embed;
+}
+
 function getColor(Verification){
     switch(Verification){
         case "Verified":
@@ -120,4 +178,4 @@ async function getFooter(nohit, guildId){
 }
 
 
-module.exports = {buildNohitEmbed, buildCatalogueEmbed, buildOverviewEmbed};
+module.exports = {buildNohitEmbed, buildCatalogueEmbed, buildOverviewEmbed, buildHelpEmbed};

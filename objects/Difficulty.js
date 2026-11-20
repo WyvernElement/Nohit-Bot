@@ -4,13 +4,15 @@ class Difficulty{
     isModifier;
     bosses;
     isSubmittable;
+    bias;
 
-    constructor(name, abbreviation, isModifier){
+    constructor(name, abbreviation, isModifier, bias){
         this.name = name;
         this.isModifier = isModifier;
         this.abbreviation = abbreviation;
         this.bosses = [];
         this.allowedModifiers = [];
+        this.bias = bias;
     }
     
     copyAdd(other){
@@ -49,7 +51,7 @@ class Difficulty{
     }
 
     allowsModifier(modifier){
-        if(!thisisModifier){
+        if(!this.isModifier){
             return this.allowedModifiers.includes(modifier);
         }
         return false;

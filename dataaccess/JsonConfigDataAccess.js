@@ -24,6 +24,7 @@ class JsonConfigDataAccess {
             const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
             for (const item of parsedJson){
                 const config = Object.assign(new ServerConfig(), item);
+                config.reviewChannels = parser(config.reviewChannels); // fuck this fuck this fuck this
                 configsMap.set(item.guildId, config);
             }
         }
@@ -41,8 +42,24 @@ class JsonConfigDataAccess {
 
     async saveConfig(){
         const items = Array.from(this.config.values());
-        fs.writeFileSync(this.configPath(), JSON.stringify(items, null, 2));
+        fs.writeFileSync(this.configPath(), JSON.stringify(items, replacer, 2));
     }
-
 }
+
+function replacer(key, value) {
+    if (value instanceof Map) {
+        return {
+            dataType: 'Map',
+            value: [...value]
+        };
+    }
+    return value;
+}
+function parser(value) {
+    if (value.dataType === 'Map') {
+        return new Map(value.value);
+    }
+    return value;
+}
+
 module.exports = JsonConfigDataAccess;

@@ -25,7 +25,7 @@ async function run(message, args, client, user) {
         return message.reply("This journey's already been completely judged, go find a different one.");
     }
     if (parsed.UserID === message.author.id){
-        //return message.reply("You can't judge your own nohits lol");
+        return message.reply("You can't judge your own nohits lol");
     }
 
     const member = await DiscordService.getMember(parsed.UserID);
@@ -53,7 +53,9 @@ async function run(message, args, client, user) {
     const comment = args.join(" ");
     const ver = flag === "Verified";
     const review = await member.send(`**[${parsed.ID}]** ${(ver) ? v : dq} Your **${parsed.Boss}** nohit on **${parsed.Difficulty}** has been ${flag.toLowerCase()} by __${message.author.displayName}__${(ver) ? "!!" : "."} ${judge.Emoji}
-${(comment.length > 0) ? `They also left a comment for you: "${comment}"` : "No comment was left."}`);
+${(comment.length > 0)
+    ? `They also left a comment for you: "${comment}"`
+    : "No comment was left."}`);
 
     parsed.review(flag, message.author.id, comment, review.id);
     await NohitService.nohitData.submitNohit(message.guildId, parsed);

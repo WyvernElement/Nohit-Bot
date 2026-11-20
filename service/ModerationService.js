@@ -12,13 +12,13 @@ class ModerationService{
         this.configData = configData;
     }
 
-    async configure(guildId, submissionChannel, submissionLogChannel, journeyLogChannel){
+    async configure(guildId, submissionChannel, submissionLogChannel, journeyLogChannel, nohitQueueChannel, databaseBackupChannel, journeyQueueMessage, rrQueueMessage){
         let config = await this.configData.getConfig(guildId);
         if(!config){
-            config = new ServerConfig(guildId, submissionChannel, submissionLogChannel, journeyLogChannel);
+            config = new ServerConfig(guildId, submissionChannel, submissionLogChannel, journeyLogChannel, nohitQueueChannel, databaseBackupChannel, journeyQueueMessage, rrQueueMessage);
         }
         else{
-            config.reconfigure(submissionChannel, submissionLogChannel, journeyLogChannel);
+            config.reconfigure(submissionChannel, submissionLogChannel, journeyLogChannel, nohitQueueChannel, databaseBackupChannel, journeyQueueMessage, rrQueueMessage);
         }
         await this.configData.setConfig(guildId, config);
     }

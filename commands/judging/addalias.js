@@ -1,4 +1,4 @@
-const NohitService = require("../service/NohitService.js");
+const NohitService = require("../../service/NohitService.js");
 
 async function run(message, args, client, user){
     const parsed = await parseArgs(message.guildId, args);

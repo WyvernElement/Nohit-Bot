@@ -1,4 +1,4 @@
-const NohitService = require("../service/NohitService.js");
+const NohitService = require("../../service/NohitService.js");
 
 function parseCreateDifficultyArgs(guild, args) {
     if (args.length < 2) {
