@@ -1,5 +1,6 @@
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
+const {parseForKeywords} = require("../discord/argument_util");
 const {v, dq} = require("../discord/emoji_util");
 
 function verificationEmoji(nohit){
@@ -7,9 +8,9 @@ function verificationEmoji(nohit){
         return ":question:";
     }
     if (nohit.Verification === "Verified"){
-        return v;
+        return "V"//v;
     }
-    return dq;
+    return "DQ"//dq;
 }
 
 function findBoss(difficulty, bossName){
@@ -43,46 +44,55 @@ async function nohitsInProgressionOrder(guildId, difficulty, ids){
 }
 
 async function run(message, args, client, user){
-    const id = args[0];
-    const iid = args[1] ?? message.author.id;
-    const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, id, iid) ?? await NohitService.lookupByUser(message.guildId, iid, id);
-    if (journey === undefined){
-        if (NohitService.resolveDifficulty(message.guildId, id) || NohitService.resolveDifficulty(message.guildId, iid)){
-            return message.reply(`${iid === message.author.id ? "You haven't": "That user hasn't"} submitted any nohits for that difficulty.`);
-        }
-        else{
-            return message.reply("Try again, love. You're not making sense here.");
+    if (args.length === 0){
+        return message.reply( "Usage: `!progress <id>` or `!progress <difficulty> <user>`.\nExample: `!progress 101`, `!p d 1233943368426328094`")
+    }
+
+    const parsed = parseForKeywords(message.guildId, args);
+
+    let journey;
+    if (parsed.num){
+        journey = await NohitService.lookupJourney(message.guildId, parsed.num)
+        if (!journey){
+            return message.reply("That ID isn't any good, try again.");
         }
     }
     else{
-        let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
+        if (!parsed.Diff){
+            return message.reply("Try again, love. You're not making sense here.");
+        }
+        journey = await NohitService.lookupByUser(message.guildId, parsed.ID ?? message.author.id, parsed.Diff);
+        if (!journey){
+            return message.reply(`${parsed.ID ? "That user hasn't" : "You haven't"} submitted any nohits for that difficulty.`);
+        }
+    }
+    let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
 ID: *${journey.ID}*${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
 :V_: = Verified
 :dq: = Disqualified, needs redo
 :question: = Submitted, yet to be reviewed\n`;
 
-        await NohitService.updateJourneys(message.guildId);
-        const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
-        const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
+    await NohitService.updateJourneys(message.guildId);
+    const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
+    const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
 
-        for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs)){
+    for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs)){
+        response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
+    }
+
+    if (journey.SpecialIDs?.length){
+        response += "\n";
+        for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.SpecialIDs)){
             response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
         }
-
-        if (journey.SpecialIDs?.length){
-            response += "\n";
-            for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.SpecialIDs)){
-                response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
-            }
-        }
-
-        const remaining = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
-        response += `\n\n**__Totals:__**
-${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
-**${remaining} nohit${remaining === 1 ? "" : "s"} remain.**`;
-
-        return message.reply(response);
     }
+
+    const remaining = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
+    response += `\n\n**__Totals:__**
+${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
+**${(remaining === 0) ?  "This nohit journey is completed!!" : `${remaining} nohit${remaining === 1 ? "" : "s"} remain.`}**`;
+
+    return message.reply(response);
 }
 
 module.exports = {

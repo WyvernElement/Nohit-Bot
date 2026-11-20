@@ -2,6 +2,7 @@ const { buildNohitEmbed } = require("../discord/embed_builder.js");
 const NohitService = require("../service/NohitService.js");
 const ModerationService = require("../service/ModerationService");
 const DiscordService = require("../service/DiscordService");
+const {parseForKeywords} = require("../discord/argument_util");
 
 function isAllowedVideoUrl(rawUrl) {
     let url;
@@ -24,56 +25,52 @@ function isAllowedVideoUrl(rawUrl) {
     return false;
 }
 
-function parseSubmitArgs(args) {
-    if (args.length < 3 || args.length > 4) {
-        return undefined;
-    }
-    const difficulty = args[0];
-    const boss = args[1];
-    const url = args[2];
-    const comment = args.length === 4 ? args.slice(3).join(" ").trim() : "";
-    if (!difficulty || !boss || !url) {
-        return undefined;
-    }
-    return { difficulty, boss, url, comment };
-}
-
 async function run(message, args, client, user) {
     const config = await ModerationService.getConfig(message.guildId);
     if(message.channel.id !== config.submissionChannel){
         return message.reply(`This command can only be used in <#${config.submissionChannel}>!`);
     }
-
-    const parsed = parseSubmitArgs(args);
-    if (!parsed) {
-        return message.reply(
-            "Usage: `!submit <difficulty> <boss> <video url> [comment]` — one word per parameter, no spaces.\nExample: `!submit Death ks https://youtu.be/example first try`"
-        );
+    if (args.length === 0) {
+        return message.reply("Usage: `!submit <difficulty> <boss> <video url> [comment]` — one word per parameter, no spaces.\nExample: `!submit Death ks https://youtu.be/example first try`");
     }
 
-    if (!isAllowedVideoUrl(parsed.url)) {
+    const parsed = parseForKeywords(message.guildId, args);
+
+    if (!parsed.Diff){
+        return message.reply("You typed the difficulty wrong.");
+    }
+    if (!parsed.Boss){
+        return message.reply("That's not a valid boss name!");
+    }
+    
+    const url = args.shift();
+    if (!url){
+        return message.reply("You need to submit a video link as well!");
+    }
+
+    if (!isAllowedVideoUrl(url)) {
         return message.reply("Video links must be from **YouTube** or **Bilibili**.");
     }
 
     const existing = await NohitService.lookupByBoss(
         message.guildId,
         message.author.id,
-        parsed.difficulty,
-        parsed.boss
+        parsed.Diff,
+        parsed.Boss.name
     );
 
     const nohit = await NohitService.submit(
         message.guildId,
         message.author.id,
-        parsed.difficulty,
-        parsed.boss,
-        parsed.url,
-        parsed.comment
+        parsed.Diff,
+        parsed.Boss.name,
+        url,
+        args.join(" ")
     );
 
     if (nohit === undefined) {
         return message.reply(
-            "That submission didn't work — check the difficulty (and modifiers), boss name, and try again."
+            "That submission didn't work. I'd tell you to double check the arguments you gave, but I honestly have no idea what the issue could be either."
         );
     }
 

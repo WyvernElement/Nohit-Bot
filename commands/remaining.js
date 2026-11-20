@@ -1,40 +1,52 @@
 const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
+const {parseForKeywords} = require("../discord/argument_util");
 
 async function run(message, args, client, user){
-    const id = args[0];
-    const iid = args[1] ?? message.author.id;
-    const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, id, iid) ?? await NohitService.lookupByUser(message.guildId, iid, id);
-    if (journey === undefined){
-        if (NohitService.resolveDifficulty(message.guildId, id) === undefined && NohitService.resolveDifficulty(message.guildId, iid) === undefined){
-            return message.reply("Try again, love. You're not making sense here.");
-        }
-        else{
-            return message.reply(`${iid === message.author.id ? "You haven't": "That user hasn't"} submitted any nohits for that difficulty.`);
+    if (args.length === 0){
+        return message.reply( "Usage: `!progress <id>` or `!progress <difficulty> <user>`.\nExample: `!progress 101`, `!p d 1233943368426328094`")
+    }
+
+    const parsed = parseForKeywords(message.guildId, args);
+
+    let journey;
+    if (parsed.num){
+        journey = await NohitService.lookupJourney(message.guildId, parsed.num)
+        if (!journey){
+            return message.reply("That ID isn't any good, try again.");
         }
     }
     else{
-        const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
-        const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
-        let bosses = difficulty.bosses;
-        bosses.sort((a, b) => a.progressionOrder - b.progressionOrder);
-        let bossNames = [];
-        for(const boss of bosses) {
-            bossNames.push(boss.textName);
+        if (!parsed.Diff){
+            return message.reply("Try again, love. You're not making sense here.");
         }
-        for(const nohitID of journey.NohitIDs){
-            let nohit = await NohitService.lookup(message.guildId, nohitID);
-            const index = bossNames.indexOf(nohit.Boss);
-            if(index > -1){
-                bossNames.splice(index, 1);
-            }
+        journey = await NohitService.lookupByUser(message.guildId, parsed.ID ?? message.author.id, parsed.Diff);
+        if (!journey){
+            return message.reply(`${parsed.ID ? "That user hasn't" : "You haven't"} submitted any nohits for that difficulty.`);
         }
-        let msg = `__Remaining nohits for **${await DiscordService.getDisplayName(iid)}** on **${resolved.standard}** mode__\n\n`;
-        for(const boss of bossNames){
-            msg += boss + "\n";
-        }
-        msg += `\n**${bossNames.length}** nohits remaining. Best of luck :salute:`
-        return message.reply(msg);
     }
+    if (!parsed.DiffObj){
+        const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
+        parsed.DiffObj = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
+    }
+    let bosses = parsed.DiffObj.bosses;
+    bosses.sort((a, b) => a.progressionOrder - b.progressionOrder);
+    let bossNames = [];
+    for(const boss of bosses) {
+        bossNames.push(boss.textName);
+    }
+    for(const nohitID of journey.NohitIDs){
+        let nohit = await NohitService.lookup(message.guildId, nohitID);
+        const index = bossNames.indexOf(nohit.Boss);
+        if(index > -1){
+            bossNames.splice(index, 1);
+        }
+    }
+    let msg = `__Remaining nohits for **${await DiscordService.getDisplayName(journey.UserID)}** on **${journey.Difficulty}** mode__\n\n`;
+    for(const boss of bossNames){
+        msg += boss + "\n";
+    }
+    msg += `\n**${bossNames.length}** nohits remaining. Best of luck :salute:`
+    return message.reply(msg);
 }
 module.exports = {run};

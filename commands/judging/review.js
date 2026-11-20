@@ -25,7 +25,7 @@ async function run(message, args, client, user) {
         return message.reply("This journey's already been completely judged, go find a different one.");
     }
     if (parsed.UserID === message.author.id){
-        return message.reply("You can't judge your own nohits lol");
+        //return message.reply("You can't judge your own nohits lol");
     }
 
     const member = await DiscordService.getMember(parsed.UserID);

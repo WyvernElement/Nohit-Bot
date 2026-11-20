@@ -22,6 +22,7 @@ addAlias("lookup", "l");
 addAlias("progress", "p");
 addAlias("remaining", ["rem"]);
 addAlias("overview", "o");
+addAlias("nohitstats", ["stats", "stat"]);
 addAlias("submit", "s");
 addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("addboss", ["ab"]);

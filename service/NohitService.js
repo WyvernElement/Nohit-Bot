@@ -94,11 +94,12 @@ class NohitService {
         //returns String
     }
 
-    async updateJourneys(guildId){ //need to fix this so it will persist
+    async updateJourneys(guildId){
         for (const [id, journey] of this.nohitData.journeys.get(guildId)){
             journey.V = 0;
             journey.DQ = 0;
             journey.Pending = 0;
+            journey.Deleted = 0;
             for (const id of journey.NohitIDs){
                 const nohit = await this.lookup(guildId, id);
                 switch (nohit.Verification){
@@ -112,8 +113,80 @@ class NohitService {
                     journey.Pending++;
                     break;
                 }
+                if (nohit.UserComment === "Deleted"){
+                    journey.Deleted++
+                }
+            }
+            const resolved = this.resolveDifficulty(guildId, journey.Difficulty);
+            const difficulty = resolved ? resolved.base : this.findDifficulty(guildId, journey.Difficulty);
+            if (difficulty && journey.NohitIDs.length >= difficulty.bosses.filter(boss => boss.textName != "Boss Rush").length){
+                journey.Completed = true;
             }
         }
+    }
+
+    async stats(guildId){
+        await this.updateJourneys(guildId);
+        
+        let Stats = {
+            V: 0,
+            DQ: 0,
+            P: 0,
+            D: 0,
+            T: 0
+        };
+        const Bosses = new Map();
+        const Diffs = new Map();
+        for (const nohit of this.nohitData.nohits.get(guildId).values()){
+            if (!Bosses.has(nohit.Boss)){
+                Bosses.set(nohit.Boss,{
+                    V: 0,
+                    DQ: 0,
+                    P: 0,
+                    D: 0,
+                    T: 0
+                });
+            }
+            const boss = Bosses.get(nohit.Boss);
+            if (!Diffs.has(nohit.Difficulty)){
+                Diffs.set(nohit.Difficulty,{
+                    V: 0,
+                    DQ: 0,
+                    P: 0,
+                    D: 0,
+                    T: 0
+                });
+            }
+            const diff = Diffs.get(nohit.Difficulty);
+
+            switch (nohit.Verification){
+                case "Verified":
+                    Stats.V++;
+                    boss.V++;
+                    diff.V++;
+                    break;
+                case "Disqualified":
+                    Stats.DQ++;
+                    boss.DQ++;
+                    diff.DQ++;
+                    break;
+                case "Pending":
+                    Stats.P++;
+                    boss.P++;
+                    diff.P++;
+                    break;
+            }
+            
+            if (nohit.UserComment === "Deleted"){
+                Stats.D++;
+            }
+            else{
+                boss.T++;
+                diff.T++;
+            }
+            Stats.T++;
+        }
+        return { Stats, Bosses, Diffs }
     }
 
     async totalNohits(guildId){
@@ -185,7 +258,7 @@ class NohitService {
             return undefined;
         }
         const trimmedName = name.trim();
-        const trimmedAbbrev = abbreviation.trim();
+        const trimmedAbbrev = abbreviation.trim().toLowerCase();
         if (this.nohitData.getDifficulty(guildId, trimmedName)) {
             return { conflict: "name" };
         }
@@ -207,7 +280,7 @@ class NohitService {
             return undefined;
         }
         const trimmedName = name.trim();
-        const trimmedAbbrev = abbreviation.trim();
+        const trimmedAbbrev = abbreviation.trim().toLowerCase();
         if (this.nohitData.getDifficulty(guildId, trimmedName)) {
             return { conflict: "name" };
         }

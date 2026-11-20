@@ -4,10 +4,16 @@ function parseAddBossArgs(args) {
     if (args.length < 2) {
         return undefined;
     }
+    
+    let x = 0;
+    if (Number.isFinite(Number(args[1]))){
+        x = 1;
+    }
+
     const difficulty = args[0];
-    const id = args[1];
-    const order = args[2];
-    const boss = args.slice(3).join(" ").trim();
+    const order = args[2 - x];
+    const boss = args.slice(3 - x).join(" ").trim();
+    const id = (x) ? boss.replaceAll(' ', '').toLowerCase() : args[1];
     if (!difficulty || !id || !order || !boss) {
         return undefined;
     }
@@ -18,7 +24,7 @@ async function run(message, args, client, user) {
     const parsed = parseAddBossArgs(args);
     if (!parsed) {
         return message.reply(
-            "Usage: `!addboss <difficulty> <boss identifier> <progression order> <boss name>`\nExample: `!addboss Death KingSlime 1000 King Slime`"
+            "Usage: `!addboss <difficulty> <boss identifier (optional)> <progression order> <boss name>`\nExample: `!addboss Death KingSlime 1000 King Slime`"
         );
     }
 

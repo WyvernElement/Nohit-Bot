@@ -1,11 +1,11 @@
 const NohitService = require("../service/NohitService.js");
 
-function parseCreateDifficultyArgs(args) {
+function parseCreateDifficultyArgs(guild, args) {
     if (args.length < 2) {
         return undefined;
     }
-    const base = NohitService.findDifficulty(args[0]);
-    const modifiers = args.slice(1).map(mod => NohitService.findDifficulty(mod));
+    const base = NohitService.findDifficulty(guild, args[0]);
+    const modifiers = args.slice(1).map(mod => NohitService.findDifficulty(guild, mod));
     if (base && modifiers) {
         return { base, modifiers };
     }
@@ -13,7 +13,7 @@ function parseCreateDifficultyArgs(args) {
 }
 
 async function run(message, args, client, user) {
-    const parsed = parseCreateDifficultyArgs(args);
+    const parsed = parseCreateDifficultyArgs(message.guildId, args);
     if (!parsed) {
         return message.reply(
             "Usage: `!allowmodifier <base> <modifier(s)>`.\nExample: `!addmodifiers Death Shroomed Defiled` or `!addmodifier ceg d`"
@@ -34,7 +34,7 @@ async function run(message, args, client, user) {
     for (let i = 0; i < parsed.modifiers.length; i++){
         response += result[i] ? `\n*${parsed.modifiers[i].name}* modifier successfully added.` : `\n**Failed to add ${parsed.modifiers[i].name}!**`
     }
-    NohitService.nohitData.saveDifficulties();
+    NohitService.nohitData.saveDifficulties(message.guildId);
     return message.reply(response);
 }
 
