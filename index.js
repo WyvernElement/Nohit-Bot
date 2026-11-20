@@ -2,6 +2,7 @@ require('dotenv').config();
 const{Client, GatewayIntentBits, ActivityType} = require('discord.js');
 const service = require('./service/DiscordService.js');
 const NohitService = require("./service/NohitService.js");
+const ModerationService = require("./service/ModerationService.js");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates] });
 client.on('clientReady', () => {
@@ -30,6 +31,7 @@ addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment", ["rewritecomment"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
+addAlias("await");
 
 const JUDGING = new Map();
 addJudgeAlias("judgerecomment", ["jrecomment", "jr"]);
@@ -52,47 +54,49 @@ client.on('messageCreate', async (message) => {
       return;
   }
   console.log(message.content);
-  if(message.content.startsWith("!")){
-    const args = message.content.slice(1).split(" ");
-    const commandAlias = args.shift().toLowerCase();
-    const user = NohitService.userData.getUser(message.guildId, message.author.id);
-    if(COMMANDS.has(commandAlias)){
-      try{
-          const commandName = COMMANDS.get(commandAlias);
-          const command = require(`./commands/${commandName}.js`);
-          await command.run(message, args, client, user);
-      }
-      catch(err){
-          console.log(err);
-      }
-    }
-    if(JUDGING.has(commandAlias)){
-      if (!NohitService.checkJudge(message.guildId, message.author.id)){
-        message.reply("You're not a judge lol get outta here")
-      }
-      else{
+  if (await ModerationService.moderate(message, client)){
+    if (message.content.startsWith("!")){
+      const args = message.content.slice(1).split(" ");
+      const commandAlias = args.shift().toLowerCase();
+      const user = NohitService.userData.getUser(message.guildId, message.author.id);
+      if(COMMANDS.has(commandAlias)){
         try{
-          const commandName = JUDGING.get(commandAlias);
-          const command = require(`./commands/judging/${commandName}.js`);
-          await command.run(message, args, client, user);
+            const commandName = COMMANDS.get(commandAlias);
+            const command = require(`./commands/${commandName}.js`);
+            await command.run(message, args, client, user);
         }
         catch(err){
-          console.log(err);
+            console.log(err);
         }
       }
-    }
-    if(ADMIN.has(commandAlias)){
-      if (false){
-        message.reply("only registered bot admins can use this command")
-      }
-      else{
-        try{
-          const commandName = ADMIN.get(commandAlias);
-          const command = require(`./commands/admin/${commandName}.js`);
-          await command.run(message, args, client, user);
+      if(JUDGING.has(commandAlias)){
+        if (!NohitService.checkJudge(message.guildId, message.author.id)){
+          message.reply("You're not a judge lol get outta here")
         }
-        catch(err){
-          console.log(err);
+        else{
+          try{
+            const commandName = JUDGING.get(commandAlias);
+            const command = require(`./commands/judging/${commandName}.js`);
+            await command.run(message, args, client, user);
+          }
+          catch(err){
+            console.log(err);
+          }
+        }
+      }
+      if(ADMIN.has(commandAlias)){
+        if (false){
+          message.reply("only registered bot admins can use this command")
+        }
+        else{
+          try{
+            const commandName = ADMIN.get(commandAlias);
+            const command = require(`./commands/admin/${commandName}.js`);
+            await command.run(message, args, client, user);
+          }
+          catch(err){
+            console.log(err);
+          }
         }
       }
     }

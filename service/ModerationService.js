@@ -27,6 +27,15 @@ class ModerationService{
         return await this.configData.getConfig(guildId);
     }
 
+    async moderate(message, client){
+        const config = await this.getConfig(message.guildId);
+        if (config.submissionChannel === message.channelId && !message.content.startsWith("!s")){
+            message.delete();
+            return false;
+        }
+
+        return true;
+    }
 }
 const moderation = new ModerationService();
 module.exports = moderation;
