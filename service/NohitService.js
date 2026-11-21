@@ -39,6 +39,10 @@ class NohitService {
         return nohit;
     }
 
+    async lookupReview(guildId, id){
+        return await this.nohitData.getReview(guildId, id);
+    }
+
     async catalogue(guildId, difficulty, boss, count, verified){
         const resolved = this.resolveDifficulty(guildId, difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
@@ -88,10 +92,6 @@ class NohitService {
         const nohit = await this.nohitData.getNohit(guildId, id);
         nohit.UserComment = newComment;
         await this.nohitData.submitNohit(guildId, nohit);
-    }
-
-    async deleteNohit(guildId, id, difficulty, boss){
-        //returns String
     }
 
     async updateJourneys(guildId){

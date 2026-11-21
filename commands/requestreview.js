@@ -36,6 +36,9 @@ async function run(message, args, client, user){
     if (message.author.id != nohit.UserID){
         return message.reply("Lovely thought, but no, you can't submit someone else's nohits for review. At least I'm going to assume you're doing it out of benevolence. If not... well, I'd have to kill you.")
     }
+    if (await NohitService.lookupReview(message.guildId, nohit.ID)){
+        return message.reply("Please be patient. The judges will get to it. If it's really been a while, ask them about it.");
+    }
 
     let j = undefined;
     for (const judge of NohitService.userData.judges.get(message.guildId).values()){
@@ -64,7 +67,10 @@ async function run(message, args, client, user){
         : `Their reasoning reads: "${args.join(" ")}"`}`;
 
     const replyPayload = await buildNohitEmbed(nohit, message.guildId);
-    await DiscordService.sendMessageInChannel(msg, channelId, [replyPayload]);
+    const rr = await DiscordService.sendMessageInChannel(msg, channelId, [replyPayload]);
+    NohitService.nohitData.rrNohits.get(message.guildId).set(nohit.ID, rr.id);
+    NohitService.nohitData.saveRRs(message.guildId);
+    
     return message.reply(`Your request has been submitted to ${(j) ? await DiscordService.getDisplayName(j, message.guildId) : "the judges"}!`);
 
 }

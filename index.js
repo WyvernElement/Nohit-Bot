@@ -27,6 +27,7 @@ addAlias("overview", "o");
 addAlias("nohitstats", ["stats", "stat"]);
 addAlias("submit", "s");
 addAlias("requestreview", ["rr"]);
+addAlias("removerequest", ["rrr"]);
 addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment", ["rewritecomment"]);
 addAlias("catalogue", ["cat"]);
@@ -39,6 +40,7 @@ addJudgeAlias("review", "r");
 addJudgeAlias("delete", "d");
 addJudgeAlias("addalias", ["aa"]);
 addJudgeAlias("allowmodifier", ["allowmodifiers", "am"]);
+addJudgeAlias("togglesubmissions", ["toggle", "ts"]);
 
 const ADMIN = new Map();
 addAdminAlias("createdifficulty", ["cd"]);

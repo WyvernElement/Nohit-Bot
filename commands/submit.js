@@ -36,6 +36,9 @@ async function run(message, args, client, user) {
 
     const parsed = parseForKeywords(message.guildId, args);
 
+    if (!parsed.DiffObj.isSubmittable){
+        return message.reply("This difficulty is not currently accepting submissions.");
+    }
     if (!parsed.Diff){
         return message.reply("You typed the difficulty wrong.");
     }

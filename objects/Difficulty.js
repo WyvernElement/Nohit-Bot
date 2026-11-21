@@ -11,6 +11,7 @@ class Difficulty{
         this.isModifier = isModifier;
         this.abbreviation = abbreviation;
         this.bosses = [];
+        this.isSubmittable = true;
         this.allowedModifiers = [];
         this.bias = bias;
     }

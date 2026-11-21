@@ -35,7 +35,7 @@ class DiscordService{
 
     async sendMessageInChannel(message, channelId, embed){
         const channel = await this.client.channels.fetch(channelId);
-        await channel.send({
+        return await channel.send({
             content: message,
             embeds: embed
         });
