@@ -5,6 +5,8 @@ const ModerationService = require("../service/ModerationService");
 const { buildNohitEmbed } = require("../discord/embed_builder.js");
 const { parseForKeywords } = require("../discord/argument_util");
 
+const Description = "Forwards a request for review of a specific nohit to the judges. Don't be shy! They don't bite, I promise!";
+
 async function run(message, args, client, user){
     if (args.length === 0){
         return message.reply("Usage: `!requestreview <id>` or `!requestreview <boss> <difficulty>`.\nExample: `!requestreview 12504`, `!rr s-d scal`");
@@ -76,5 +78,6 @@ async function run(message, args, client, user){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

@@ -211,12 +211,25 @@ class NohitService {
         if (parts.length === 0) {
             return undefined;
         }
-        const difficulties = parts.map(part => this.findDifficulty(guildId, part));
+        const difficulties = parts.map(part => this.findDifficulty(guildId, part, true));
         if (difficulties.some(difficulty => difficulty === undefined)) {
             return undefined;
         }
-        const bases = difficulties.filter(difficulty => !difficulty.isModifier);
-        const modifiers = difficulties.filter(difficulty => difficulty.isModifier);
+        let mix = difficulties.filter(parsed => parsed.modifier);
+        let bases = difficulties.filter(difficulty => !difficulty.isModifier && !difficulty.diff && !difficulty.modifier);
+        let modifiers = difficulties.filter(difficulty => difficulty.isModifier);
+        if (mix.length > 0){
+            if (bases.length === 0){
+                bases = [mix.shift().diff, ...bases];
+                modifiers = [...mix.flatMap(parsed => parsed.modifier), ...modifiers];
+            }
+            else{
+                modifiers = [...mix.flatMap(parsed => parsed.modifier), ...modifiers];
+            }
+            if (modifiers.some(mod => modifiers.indexOf(mod) != modifiers.lastIndexOf(mod))){
+                return undefined;
+            }
+        }
         if (bases.length !== 1) {
             return undefined;
         }
@@ -233,15 +246,46 @@ class NohitService {
         return { base, standard };
     }
 
-    findDifficulty(guildId, token){
+    findDifficulty(guildId, token, mod){
         const direct = this.nohitData.getDifficulty(guildId, token);
         if (direct) {
             return direct;
         }
+        let modifier;
+        let diff;
         for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
-            if (difficulty.abbreviation === token.toLowerCase() || difficulty.name.toLowerCase() === token.toLowerCase()) {
-                return difficulty;
+            if (difficulty.abbreviation === token.toLowerCase()) {
+                if (mod){
+                    if (difficulty.isModifier){
+                        modifier = difficulty;
+                    }
+                    else{
+                        diff = difficulty;
+                    }
+                }
+                else{
+                    return difficulty
+                }
             }
+        }
+        for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
+            if (difficulty.name.toLowerCase().includes(token.toLowerCase())) {
+                if (mod){
+                    diff = difficulty;
+                }
+                else{
+                    return difficulty;
+                }
+            }
+        }
+        if (mod){
+            if (!modifier){
+                return diff;
+            }
+            if (!diff){
+                return modifier;
+            }
+            return { diff, modifier };
         }
         return undefined;
     }

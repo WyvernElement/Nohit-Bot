@@ -1,6 +1,8 @@
 const { buildOverviewEmbed } = require("../discord/embed_builder.js");
 const NohitService = require("../service/NohitService.js");
 
+const Description = "Displays a summary of all nohits the specified user has completed.";
+
 async function run(message, args, client, user){
     const caller = await NohitService.userData.getUser(message.guildId, args[0]) ?? user;
     if(caller === undefined){
@@ -15,5 +17,6 @@ async function run(message, args, client, user){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

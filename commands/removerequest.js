@@ -4,6 +4,8 @@ const ModerationService = require("../service/ModerationService");
 
 const { parseForKeywords } = require("../discord/argument_util");
 
+const Description = "Removes a given currently pending review request.";
+
 async function run(message, args, client, user){
     if (args.length === 0){
         return message.reply("Usage: `!requestreview <id>` or `!requestreview <boss> <difficulty>`.\nExample: `!requestreview 12504`, `!rr s-d scal`");
@@ -65,5 +67,6 @@ async function run(message, args, client, user){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

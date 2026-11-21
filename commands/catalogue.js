@@ -2,6 +2,8 @@ const NohitService = require("../service/NohitService.js");
 const {buildCatalogueEmbed} = require("../discord/embed_builder");
 const {parseForKeywords} = require("../discord/argument_util");
 
+const Description = "Fetches a list of the most recent verified nohits for a specific boss on a specific difficulty.";
+
 async function run(message, args, client, user){
     if (args.length === 0){
         if (Math.random() < 0.25){
@@ -34,4 +36,7 @@ async function run(message, args, client, user){
         embeds: [replyPayload]
     });
 }
-module.exports = {run};
+module.exports = {
+    run,
+    Description
+};

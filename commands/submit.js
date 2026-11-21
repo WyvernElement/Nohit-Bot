@@ -4,6 +4,8 @@ const ModerationService = require("../service/ModerationService");
 const DiscordService = require("../service/DiscordService");
 const {parseForKeywords} = require("../discord/argument_util");
 
+const Description = "Submits a (or resubmits an existing) nohit for review to the judges."
+
 function isAllowedVideoUrl(rawUrl) {
     let url;
     try {
@@ -117,4 +119,5 @@ function resolveLogString(remaining, difficultyText){
 
 module.exports = {
     run,
+    Description
 };

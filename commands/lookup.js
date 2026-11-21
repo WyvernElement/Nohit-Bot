@@ -3,6 +3,8 @@ const NohitService = require("../service/NohitService.js");
 
 const {parseForKeywords} = require("../discord/argument_util");
 
+const Description = "Looks up a nohit by ID or boss, difficulty, and user.";
+
 async function run(message, args, client, user){
     if (args.length === 0){
         return message.reply("I can't work with nothing, c'mon.");
@@ -48,5 +50,6 @@ async function run(message, args, client, user){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

@@ -3,6 +3,8 @@ const NohitService = require("../service/NohitService.js");
 const {parseForKeywords} = require("../discord/argument_util");
 const {v, dq} = require("../discord/emoji_util");
 
+const Description = "Displays a journey by ID or boss, difficulty, and user."; 
+
 function verificationEmoji(nohit){
     if (nohit.Verification === "Pending"){
         return ":question:";
@@ -96,5 +98,6 @@ ${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

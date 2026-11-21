@@ -1,5 +1,7 @@
 const NohitService = require("../service/NohitService.js");
 
+const Description = "Allows you to set a playlist for a given journey.";
+
 async function run(message, args, client, user){
     const id = args[0];
     const journey = await NohitService.lookupJourney(message.guildId, id) ?? await NohitService.lookupByUser(message.guildId, message.author.id, id);
@@ -22,5 +24,6 @@ async function run(message, args, client, user){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

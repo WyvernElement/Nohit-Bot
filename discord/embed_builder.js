@@ -96,7 +96,8 @@ async function commands(judge, admin){
     const fields = [];
     for (const dir of fs.readdirSync(commandDir)){
         const name = path.parse(path.join(commandDir, dir)).name
-        if (name != "admin" && name != "judging" && name != "help"){
+        const blacklist = ["admin", "judging", "help", "await"]
+        if (!blacklist.includes(name)){
             const command  = require('../commands/' + name);
             fields.push({
                 name: name,
@@ -116,6 +117,7 @@ async function reorder(fields){
         "remaining",
         "document",
         "recomment",
+        "removerequest",
         "playlist",
         "overview",
         "catalogue",

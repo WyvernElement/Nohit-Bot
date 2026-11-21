@@ -2,6 +2,8 @@ const DiscordService = require("../service/DiscordService");
 const NohitService = require("../service/NohitService.js");
 const {parseForKeywords} = require("../discord/argument_util");
 
+const Description = "Shows what nohits a journey given by ID or difficulty and user is missing.";
+
 async function run(message, args, client, user){
     if (args.length === 0){
         return message.reply( "Usage: `!progress <id>` or `!progress <difficulty> <user>`.\nExample: `!progress 101`, `!p d 1233943368426328094`")
@@ -49,4 +51,7 @@ async function run(message, args, client, user){
     msg += `\n**${bossNames.length}** nohits remaining. Best of luck :salute:`
     return message.reply(msg);
 }
-module.exports = {run};
+module.exports = {
+    run,
+    Description
+};

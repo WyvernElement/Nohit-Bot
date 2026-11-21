@@ -1,6 +1,6 @@
 const NohitService = require("../service/NohitService.js");
 
-
+const Description = "unfinished but will show a collection of misc overall stats regarding nohits and journeys";
 
 async function run(message, args, client, user){
     const {Stats, Diffs, Bosses} = await NohitService.stats(message.guildId);
@@ -28,4 +28,7 @@ Deleted: ${Stats.D}
 **Total: ${Stats.T}**
 ----------------------------------${response}`)
 }
-module.exports = {run};
+module.exports = {
+    run,
+    Description
+};

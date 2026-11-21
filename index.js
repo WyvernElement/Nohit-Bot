@@ -1,10 +1,10 @@
 require('dotenv').config();
-const{Client, GatewayIntentBits, ActivityType} = require('discord.js');
+const{Client, GatewayIntentBits, Partials, ActivityType} = require('discord.js');
 const service = require('./service/DiscordService.js');
 const NohitService = require("./service/NohitService.js");
 const ModerationService = require("./service/ModerationService.js");
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates], partials: [ Partials.Channel ]});
 client.on('clientReady', () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setPresence({
@@ -55,12 +55,33 @@ client.on('messageCreate', async (message) => {
   if(message.author.bot){
       return;
   }
-  console.log(message.content);
+
+  const maps = NohitService.userData.users.values();
+  const userInstances = [];
+  for (const map of maps){
+    userInstances.push(map.get(message.author.id));
+  }
+  if (!message.guildId){
+    const newId = userInstances[0].recentGuildId
+    if (newId){
+      message.guildId = newId;
+    }
+    else{
+      return message.reply("Interact with the bot in a server to access it in DMs!");
+    }
+  }
+  else{
+    for (const user of userInstances){
+      user.recentGuildId = message.guildId;
+    }
+  }
+
   if (await ModerationService.moderate(message, client)){
     if (message.content.startsWith("!")){
       const args = message.content.slice(1).split(" ");
       const commandAlias = args.shift().toLowerCase();
       const user = NohitService.userData.getUser(message.guildId, message.author.id);
+
       if(COMMANDS.has(commandAlias)){
         try{
             const commandName = COMMANDS.get(commandAlias);

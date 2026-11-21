@@ -6,6 +6,7 @@ class User{
     OwnedNohits = new Map();
     Language = "English";
     ResponseTable = new Map();
+    recentGuildId;
 
     constructor(id){
         this.ID = id

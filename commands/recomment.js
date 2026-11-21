@@ -1,6 +1,8 @@
 const NohitService = require("../service/NohitService.js");
 const {parseForKeywords} = require("../discord/argument_util");
 
+const Description = "Allows you to add, change, or remove your comment on a nohit.";
+
 async function run(message, args, client, user){
     if (args.length === 0){
         return message.reply("Uhh... whatttt do you want from me? I can't *do* anything if you're not going to *tell me* anything.");
@@ -41,5 +43,6 @@ async function run(message, args, client, user){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }
