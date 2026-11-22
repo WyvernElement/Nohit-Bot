@@ -371,6 +371,21 @@ class NohitService {
         return difficulty;
     }
 
+    async toggleSubmissions(guildId, difficulty){
+
+        const resolved = this.resolveDifficulty(guildId, difficulty);
+        if(!resolved){
+            return null;
+        }
+        else{
+            const base = resolved.base;
+            base.isSubmittable = !base.isSubmittable;
+            this.nohitData.addDifficulty(guildId, base);
+            return base.isSubmittable;
+        }
+
+    }
+
 }
 const service = new NohitService();
 module.exports = service;
