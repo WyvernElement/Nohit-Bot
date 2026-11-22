@@ -24,6 +24,7 @@ addAlias("lookup", "l");
 addAlias("random", ["r", "rand"]);
 addAlias("progress", "p");
 addAlias("remaining", ["rem"]);
+addAlias("timeline", "t");
 addAlias("overview", "o");
 addAlias("nohitstats", ["stats", "stat"]);
 addAlias("submit", "s");
