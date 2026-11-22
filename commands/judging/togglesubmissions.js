@@ -1,6 +1,8 @@
 const NohitService = require("../../service/NohitService.js");
 const ModerationService = require("../../service/ModerationService.js");
 
+const Description = "Disables or reenables all nohit submissions.";
+
 function parseCreateDifficultyArgs(guild, args) {
     if (args.length < 2) {
         return undefined;
@@ -76,4 +78,5 @@ async function run(message, args, client, user) {
 
 module.exports = {
     run,
+    Description
 };

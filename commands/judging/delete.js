@@ -3,6 +3,8 @@ const NohitService = require("../../service/NohitService.js");
 
 const {parseForKeywords} = require("../../discord/argument_util");
 
+const Description = "Deletes a nohit. Do **__NOT__** use this without proper discretion. It is restricted to judges-only specifically for this reason.";
+
 async function run(message, args, client, user) {
     if (args.length === 0){
         return message.reply("Usage: `!delete <id>` or `!delete <boss> <difficulty> <userid>`");
@@ -58,5 +60,6 @@ ${(args.length === 0)
 }
 
 module.exports = {
-    run
+    run,
+    Description
 };

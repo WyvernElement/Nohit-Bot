@@ -43,12 +43,12 @@ async function run(message, args, client, user){
     }
     
     const config = await ModerationService.getConfig(message.guildId);
-    const channelId = config.getReview(parsed.DiffObj.bias);
+    const channelId = config.getReview(parsed.DiffObj.bias)?.ID;
     if (!channelId){
         return message.reply("Removing a request for a nohit that can't even be reviewed. How do you do it?");
     }
     
-    const messageId = await NohitService.lookupReview(message.guildId, nohit.ID);
+    const messageId = (await NohitService.lookupReview(message.guildId, nohit.ID)).ID;
     if (!messageId){
         if (!isJudge){
             return message.reply("You never put that nohit up for review.");
@@ -57,10 +57,8 @@ async function run(message, args, client, user){
             return message.reply("Hm, seems like you put in the wrong identifiers... that nohit isn't up for review.");
         }
     }
-    const channel = await client.channels.fetch(channelId);
-    const msg = await channel.messages.fetch(messageId);
-    msg.delete();
-    NohitService.nohitData.rrNohits.get(message.guildId).delete(nohit.ID);
+    DiscordService.deleteMessageInChannel(channelId, messageId);
+    NohitService.removeReview(message.guildId, nohit.ID);
     
     return message.reply(`Your request for review has been removed.`);
 

@@ -1,5 +1,7 @@
 const NohitService = require("../../service/NohitService.js");
 
+const Description = "Adds custom boss aliases. Please be mature.";
+
 async function run(message, args, client, user){
     const parsed = await parseArgs(message.guildId, args);
     if (parsed.badargs){
@@ -34,5 +36,6 @@ async function parseArgs(guild, args){
 }
 
 module.exports = {
-    run
+    run,
+    Description
 }

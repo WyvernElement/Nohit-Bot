@@ -52,7 +52,6 @@ function parseForKeywords(guild, args){
         let name = "";
         for (let m = l; m < args.length; m++){
             name += args[m];
-            console.log(name);
             const b = NohitService.resolveBoss(guild, difObj, name);
             if (b){
                 boss = { b: b, s: l, e: m };

@@ -138,24 +138,30 @@ async function journeyFields(guildId, journeys){
 
 
 
-async function buildHelpEmbed(judge, admin){
+async function buildHelpEmbed(judge, admin, arg){
     const embed = new EmbedBuilder()
     .setColor(0xFF0000)
     .setTitle(`Click here for a complete list of commands, their descriptions, and how to use them!`)
+    .setDescription(((judge && arg != "j")
+        ? "Use `!help j` for a list of judging commands!"
+        : " ") + ((admin && arg != "a")
+        ? "Use `!help a` for a list of admin commands!"
+        : " ")
+)
     .addFields(
-        await reorder(await commands(judge, admin))
+        await reorder(await commands(judge && arg == "j", admin && arg == "a"))
     )
     return embed;
 }
 
 async function reorder(fields){
     const order = [
-        "submit",
-        "requestreview",
-        "lookup",
-        "progress",
-        "remaining",
-        "document",
+        "submit",                   "review",
+        "requestreview",            "judgerecomment",
+        "lookup",                   "delete",
+        "progress",                 "addalias",
+        "remaining",                "togglesubmissions",
+        "document",                 "allowmodifier",
         "recomment",
         "removerequest",
         "playlist",
@@ -163,6 +169,7 @@ async function reorder(fields){
         "catalogue",
         "catalogueall",
         "random",
+        "timeline",
         "veterans",
         "nohitstats"
     ];
@@ -177,17 +184,18 @@ async function reorder(fields){
             reorder[index] = item;
         }
     }
-    return reorder;
+    return reorder.filter((e) => e.name);
 }
 
 async function commands(judge, admin){
-    const commandDir = path.join(__dirname, "../commands")
+    const folder = "../commands/" + (judge ? "judging/" : "") + (admin ? "admin/" : "");
+    const commandDir = path.join(__dirname, folder);
     const fields = [];
     for (const dir of fs.readdirSync(commandDir)){
         const name = path.parse(path.join(commandDir, dir)).name
         const blacklist = ["admin", "judging", "help", "await"]
         if (!blacklist.includes(name)){
-            const command  = require('../commands/' + name);
+            const command  = require(folder + name);
             fields.push({
                 name: name,
                 value: command.Description ?? "No description provided"

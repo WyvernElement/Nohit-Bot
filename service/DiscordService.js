@@ -41,5 +41,11 @@ class DiscordService{
         });
     }
 
+    async deleteMessageInChannel(channelId, messageId){
+        const channel = await this.client.channels.fetch(channelId);
+        const message = await channel.messages.fetch(messageId);
+        await message.delete();
+    }
+
 }
 module.exports = new DiscordService();

@@ -1,4 +1,5 @@
 const moderation = require("../../service/ModerationService.js");
+const DiscordService = require("../../service/DiscordService.js");
 
 function parseChannel(value) {
     if (!value) {
@@ -36,17 +37,13 @@ async function run(message, args, client, user) {
 
     const config = await moderation.getConfig(message.guildId);
     if (config.journeyQueueMessage){
-        const channel = await client.channels.fetch(config.nohitQueueChannel);
-        const queue = await channel.messages.fetch(config.journeyQueueMessage);
-        await queue.delete();
-        const rr = await channel.messages.fetch(config.rrQueueMessage);
-        await rr.delete();
+        DiscordService.deleteMessageInChannel(config.nohitQueueChannel, config.journeyQueueMessage);
+        DiscordService.deleteMessageInChannel(config.nohitQueueChannel, config.rrQueueMessage);
     }
     
-    const channel = await client.channels.fetch(parsed.nohitQueueChannel);
-    const queue = await channel.send("This is the queue message");
     
-    const rr = await channel.send("And this is the rr message");
+    const queue = await DiscordService.sendMessageInChannel("This is the queue message", config.nohitQueueChannel);
+    const rr = await DiscordService.sendMessageInChannel("And this is the rr message", config.nohitQueueChannel);
 
     await moderation.configure(
         message.guildId,

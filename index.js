@@ -32,7 +32,8 @@ addAlias("aliases", "a");
 addAlias("requestreview", ["rr"]);
 addAlias("removerequest", ["rrr"]);
 addAlias("playlist", ["pl", "addplaylist"]);
-addAlias("recomment", ["rewritecomment"]);
+addAlias("journeycomment", ["jcommment", "jc"]);
+addAlias("recomment", ["rewritecomment", "rc"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
 addAlias("veterans", "v");
@@ -101,7 +102,7 @@ client.on('messageCreate', async (message) => {
           }
         }
       }
-      if(COMMANDS.has(commandAlias)){
+      else if(COMMANDS.has(commandAlias)){
         try{
             const commandName = COMMANDS.get(commandAlias);
             const command = require(`./commands/${commandName}.js`);
@@ -111,7 +112,7 @@ client.on('messageCreate', async (message) => {
             console.log(err);
         }
       }
-      if(ADMIN.has(commandAlias)){
+      else if(ADMIN.has(commandAlias)){
         if (false){
           message.reply("only registered bot admins can use this command")
         }

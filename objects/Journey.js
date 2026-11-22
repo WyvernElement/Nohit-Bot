@@ -9,6 +9,7 @@ class Journey{
     DQ;
     Pending;
     Completed;
+    Comment;
 
     constructor(id, userid, difficulty){
         this.ID = id;
@@ -20,6 +21,7 @@ class Journey{
         this.DQ = 0;
         this.Pending = 0;
         this.Completed = false;
+        this.Comment = "";
     }
 
     addNohit(id, special){

@@ -40,7 +40,15 @@ class NohitService {
     }
 
     async lookupReview(guildId, id){
-        return await this.nohitData.getReview(guildId, id);
+       return await this.nohitData.getReview(guildId, id);
+    }
+
+    async addReview(guildId, id, messageId, bias){
+        await this.nohitData.addReview(guildId, id, messageId, bias);
+    }
+
+    async removeReview(guildId, id){
+        await this.nohitData.removeReview(guildId, id);
     }
 
     async catalogue(guildId, difficulty, boss, count, verified){
@@ -62,6 +70,12 @@ class NohitService {
         const difficultyName = resolved ? resolved.standard : difficulty;
         const journey = await this.nohitData.getJourneyByData(guildId, userId, difficultyName);
         return journey;
+    }
+
+    async journeyComment(guildId, journey, comment){
+        journey.Comment = comment.slice(0, 1024);
+        this.nohitData.journeys.get(guildId).set(journey.ID, journey);
+        this.nohitData.saveJourneys(guildId);
     }
 
     async submit(guildId, userId, difficulty, boss, url, comment){
@@ -90,7 +104,7 @@ class NohitService {
 
     async recomment(guildId, id, newComment){
         const nohit = await this.nohitData.getNohit(guildId, id);
-        nohit.UserComment = newComment;
+        nohit.UserComment = newComment.slice(0, 1024);
         await this.nohitData.submitNohit(guildId, nohit);
     }
 

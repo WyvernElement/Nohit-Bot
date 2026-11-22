@@ -1,4 +1,5 @@
 const moderation = require("../../service/ModerationService.js");
+const DiscordService = require("../../service/DiscordService.js");
 
 function parseChannel(value) {
     if (!value) {
@@ -17,7 +18,7 @@ function parseChannel(value) {
 function parseConfigArgs(args) {
     const bias = args[0].toLowerCase();
     const reviewChannel = parseChannel(args[1]);
-    if (!bias || !reviewChannel) {
+    if (!bias) {
         return undefined;
     }
     return { bias, reviewChannel };
@@ -32,8 +33,29 @@ async function run(message, args, client, user) {
     }
 
     const config = await moderation.getConfig(message.guildId);
-    console.log(config);
-    config.reviewChannels.set(parsed.bias, parsed.reviewChannel);
+
+    const clean = config.getReview(parsed.bias);
+
+    if (clean){
+        if (!parsed.reviewChannel){
+            config.reviewChannel.delete(parsed.bias);
+        }
+        else{
+            DiscordService.deleteMessageInChannel(clean.ID, clean.Queue);
+            DiscordService.deleteMessageInChannel(clean.ID, clean.RR);
+        }
+    }
+
+    const qmsg = `Temporary queue placeholder for ${parsed.bias}, still trying to think of how to handle updating this`;
+    const rrmsg = `same but for requested reviews`;
+
+
+    config.addReviewChannel(
+        parsed.bias,
+        parsed.reviewChannel,
+        (await DiscordService.sendMessageInChannel(qmsg, parsed.reviewChannel)).id,
+        (await DiscordService.sendMessageInChannel(rrmsg, parsed.reviewChannel)).id
+    );
     moderation.configData.setConfig(message.guildId, config);
 
     return message.reply("Bias associated with channel.");
