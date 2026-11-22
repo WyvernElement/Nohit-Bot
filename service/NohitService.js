@@ -34,7 +34,7 @@ class NohitService {
         const resolved = this.resolveDifficulty(guildId, difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
         const resolvedBoss = resolved ? this.resolveBoss(guildId, resolved.base, boss) : undefined;
-        const bossName = resolvedBoss?.textName ?? this.nohitData.getBoss(guildId, boss) ?? boss;
+        const bossName = resolvedBoss?.name ?? this.nohitData.getBoss(guildId, boss) ?? boss;
         const nohit = await this.nohitData.getNohitByData(guildId, userId, difficultyName, bossName);
         return nohit;
     }
@@ -75,7 +75,7 @@ class NohitService {
         }
         const existingNohit = await this.lookupByBoss(guildId, userId, difficulty, boss);
         const id = existingNohit ? existingNohit.ID : (await this.totalNohits(guildId)) + 1;
-        const newNohit = new Nohit(id, userId, resolved.standard, resolvedBoss.textName, url, comment);
+        const newNohit = new Nohit(id, userId, resolved.standard, resolvedBoss.name, url, comment);
         const user = await this.userData.getUser(guildId, userId);
         let journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
         if(!journey){
@@ -99,9 +99,12 @@ class NohitService {
             journey.V = 0;
             journey.DQ = 0;
             journey.Pending = 0;
-            journey.Deleted = 0;
             for (const id of journey.NohitIDs){
                 const nohit = await this.lookup(guildId, id);
+                if (nohit.UserComment === "Deleted"){
+                    journey.NohitIDs.splice(journey.NohitIDs.indexOf(id), 1);
+                    continue;
+                }
                 switch (nohit.Verification){
                 case "Verified":
                     journey.V++;
@@ -113,9 +116,6 @@ class NohitService {
                     journey.Pending++;
                     break;
                 }
-                if (nohit.UserComment === "Deleted"){
-                    journey.Deleted++
-                }
             }
             const resolved = this.resolveDifficulty(guildId, journey.Difficulty);
             const difficulty = resolved ? resolved.base : this.findDifficulty(guildId, journey.Difficulty);
@@ -123,6 +123,7 @@ class NohitService {
                 journey.Completed = true;
             }
         }
+        this.nohitData.saveJourneys(guildId);
     }
 
     async stats(guildId){
@@ -271,7 +272,12 @@ class NohitService {
         for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
             if (difficulty.name.toLowerCase().includes(token.toLowerCase())) {
                 if (mod){
-                    diff = difficulty;
+                    if(!diff){
+                        diff = difficulty;
+                    }
+                    if(!modifier){
+                        modifier = difficulty;
+                    }
                 }
                 else{
                     return difficulty;

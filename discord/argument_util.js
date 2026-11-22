@@ -47,17 +47,23 @@ function parseForKeywords(guild, args){
         dif = compare.item.d;
     }
     
-    let name = "";
     let boss;
     for (let l = 0; l < args.length; l++){
-        name += args[l];
-        const b = NohitService.resolveBoss(guild, difObj, name);
-        if (b){
-            boss = { b: b, e: l };
+        let name = "";
+        for (let m = l; m < args.length; m++){
+            name += args[m];
+            console.log(name);
+            const b = NohitService.resolveBoss(guild, difObj, name);
+            if (b){
+                boss = { b: b, s: l, e: m };
+            }
+        }
+        if (boss){
+            break;
         }
     }
     if (boss){
-        args.splice(0, ++boss.e);
+        args.splice(boss.s, ++boss.e);
         boss = boss.b;
     }
 

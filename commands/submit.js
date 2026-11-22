@@ -79,18 +79,18 @@ async function run(message, args, client, user) {
         );
     }
 
-    const replyPayload = await buildNohitEmbed(nohit, message.guild?.id);
     const action = existing
-        ? `Resubmitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}). Verification was reset to Pending.`
-        : `Submitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}).`;
+        ? `Resubmitted nohit **#${nohit.ID}** (${parsed.Boss.textName} on ${nohit.Difficulty}). Verification was reset to Pending.`
+        : `Submitted nohit **#${nohit.ID}** (${parsed.Boss.textName} on ${nohit.Difficulty}).`;
 
     if(config.submissionLogChannel){
         const journey = await NohitService.lookupByUser(message.guildId,  nohit.UserID, nohit.Difficulty);
         const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
         const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
         const remain = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
+        const boss = await NohitService.resolveBoss(message.guildId, difficulty, nohit.Boss);
 
-        const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${nohit.Boss}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
+        const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${boss.textName}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
 
         await DiscordService.sendMessageInChannel(msg, config.submissionLogChannel);
 
@@ -103,10 +103,7 @@ async function run(message, args, client, user) {
         }
     }
 
-    return message.reply({
-        content: action,
-        embeds: [replyPayload],
-    });
+    return message.reply(action);
 }
 
 function resolveLogString(remaining, difficultyText){

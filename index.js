@@ -21,17 +21,20 @@ const COMMANDS = new Map();
 addAlias("help", "h");
 addAlias("document", ["doc"]); // Remember to enclose any alias that's longer than 1 letter in an array too!
 addAlias("lookup", "l");
+addAlias("random", ["r", "rand"]);
 addAlias("progress", "p");
 addAlias("remaining", ["rem"]);
 addAlias("overview", "o");
 addAlias("nohitstats", ["stats", "stat"]);
 addAlias("submit", "s");
+addAlias("aliases", "a");
 addAlias("requestreview", ["rr"]);
 addAlias("removerequest", ["rrr"]);
 addAlias("playlist", ["pl", "addplaylist"]);
 addAlias("recomment", ["rewritecomment"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
+addAlias("veterans", "v");
 addAlias("await");
 
 const JUDGING = new Map();
@@ -82,16 +85,6 @@ client.on('messageCreate', async (message) => {
       const commandAlias = args.shift().toLowerCase();
       const user = NohitService.userData.getUser(message.guildId, message.author.id);
 
-      if(COMMANDS.has(commandAlias)){
-        try{
-            const commandName = COMMANDS.get(commandAlias);
-            const command = require(`./commands/${commandName}.js`);
-            await command.run(message, args, client, user);
-        }
-        catch(err){
-            console.log(err);
-        }
-      }
       if(JUDGING.has(commandAlias)){
         if (!NohitService.checkJudge(message.guildId, message.author.id)){
           message.reply("You're not a judge lol get outta here")
@@ -105,6 +98,16 @@ client.on('messageCreate', async (message) => {
           catch(err){
             console.log(err);
           }
+        }
+      }
+      if(COMMANDS.has(commandAlias)){
+        try{
+            const commandName = COMMANDS.get(commandAlias);
+            const command = require(`./commands/${commandName}.js`);
+            await command.run(message, args, client, user);
+        }
+        catch(err){
+            console.log(err);
         }
       }
       if(ADMIN.has(commandAlias)){

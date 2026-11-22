@@ -204,7 +204,7 @@ class JsonNohitDataAccess {
         for (const nohit of this.nohits.get(guildId).values()) {
             const sameUser = String(nohit.UserID) === String(userId);
             const sameDifficulty = nohit.Difficulty === difficulty;
-            const sameBoss = nohit.Boss === boss;
+            const sameBoss = nohit.Boss.toLowerCase().replace(" ", "") === boss;
             if (sameUser && sameDifficulty && sameBoss) {
                 if (!match || Number(nohit.ID) > Number(match.ID)) {
                     match = nohit;

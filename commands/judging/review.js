@@ -25,7 +25,7 @@ async function run(message, args, client, user) {
         return message.reply("This journey's already been completely judged, go find a different one.");
     }
     if (parsed.UserID === message.author.id){
-        return message.reply("You can't judge your own nohits lol");
+        //return message.reply("You can't judge your own nohits lol");
     }
 
     const member = await DiscordService.getMember(parsed.UserID);
@@ -65,7 +65,9 @@ ${(comment.length > 0)
     const next = await findNext(message.guildId, journey) ?? { id: undefined };
     judge.Next = next.ID;
 
-    return message.reply(`Nohit **${parsed.ID}** reviewed!${(next.ID) ? `\nNext nohit: **${next.ID} - [${next.Boss}](<${next.Url}>)**` : ""}`);
+    const diff = await NohitService.resolveDifficulty(message.guildId, next.Difficulty);
+    const boss = await NohitService.resolveBoss(message.guildId, diff.base, next.Boss);
+    return message.reply(`Nohit **${parsed.ID}** reviewed!${(next.ID) ? `\nNext nohit: **${next.ID} - [${boss.textName}](<${next.Url}>)**` : ""}`);
 }
 
 async function parseNohit(guild, args, author){
@@ -112,7 +114,7 @@ async function parseNohit(guild, args, author){
                 return { completed: true };
             }
             args.shift();
-            return remaining[Math.floor(Math.random() * items.length)];
+            return remaining[Math.floor(Math.random() * remaining.length)];
         }
 
         const next = ["n", "next"]

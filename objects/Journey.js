@@ -8,7 +8,6 @@ class Journey{
     V;
     DQ;
     Pending;
-    Deleted;
     Completed;
 
     constructor(id, userid, difficulty){
@@ -20,7 +19,6 @@ class Journey{
         this.V = 0;
         this.DQ = 0;
         this.Pending = 0;
-        this.Deleted = 0;
         this.Completed = false;
     }
 

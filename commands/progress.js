@@ -19,27 +19,35 @@ function findBoss(difficulty, bossName){
     if (!difficulty?.bosses){
         return undefined;
     }
-    return difficulty.bosses.find(boss => boss.name === bossName || boss.textName === bossName);
+    return difficulty.bosses.find(boss => boss.name === bossName.toLowerCase().replaceAll(" ", "") || boss.textName === bossName);
 }
 
 function progressionOrder(difficulty, bossName){
-    const boss = findBoss(difficulty, bossName);
+    const boss = findBoss(difficulty, bossName?.Boss) ?? bossName;
     const order = Number(boss?.progressionOrder);
     return Number.isFinite(order) ? order : Number.POSITIVE_INFINITY;
 }
 
 function compareNohits(difficulty, a, b){
-    const orderDiff = progressionOrder(difficulty, a.Boss) - progressionOrder(difficulty, b.Boss);
+    const orderDiff = progressionOrder(difficulty, a) - progressionOrder(difficulty, b);
     if (orderDiff !== 0){
         return orderDiff;
     }
     return Number(a.ID) - Number(b.ID);
 }
 
-async function nohitsInProgressionOrder(guildId, difficulty, ids){
+async function nohitsInProgressionOrder(guildId, difficulty, ids, titles){
     const nohits = [];
     for (const id of ids){
-        nohits.push(await NohitService.lookup(guildId, id));
+        const nohit = await NohitService.lookup(guildId, id);
+        nohits.push(nohit);
+    }
+    if (titles){
+        nohits.push({ Boss: "**__Pre-Hardmode__**", progressionOrder: 0 })
+        nohits.push({ Boss: "**__Hardmode__**", progressionOrder: progressionOrder(difficulty, { Boss: "wallofflesh" }) + 0.1 })
+        console.log(progressionOrder(difficulty, { Boss: "wallofflesh" }) + 0.1);
+        nohits.push({ Boss: "**__Post-Moon Lord__**", progressionOrder: progressionOrder(difficulty, { Boss: "moonlord" }) + 0.1 })
+        console.log(progressionOrder(difficulty, { Boss: "moonlord" }) + 0.1)
     }
     nohits.sort((a, b) => compareNohits(difficulty, a, b));
     return nohits;
@@ -52,6 +60,7 @@ async function run(message, args, client, user){
 
     const parsed = parseForKeywords(message.guildId, args);
 
+    await NohitService.updateJourneys(message.guildId);
     let journey;
     if (parsed.num){
         journey = await NohitService.lookupJourney(message.guildId, parsed.num)
@@ -69,22 +78,25 @@ async function run(message, args, client, user){
         }
     }
     let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
-ID: *${journey.ID}*${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
+ID: ${journey.ID}${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
 :V_: = Verified
 :dq: = Disqualified, needs redo
 :question: = Submitted, yet to be reviewed\n`;
 
-    await NohitService.updateJourneys(message.guildId);
     const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
     const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
 
-    for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs)){
-        response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
+    for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs, true)){
+        if (!nohit?.ID){
+            response += `\n${nohit.Boss}`;
+            continue;
+        }
+        response += `\n${nohit.ID} - ${difficulty.bosses.find(boss => boss.name === nohit.Boss.toLowerCase().replaceAll(" ", ""))?.textName} - ${verificationEmoji(nohit)}`;
     }
 
     if (journey.SpecialIDs?.length){
         response += "\n";
-        for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.SpecialIDs)){
+        for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.SpecialIDs, false)){
             response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
         }
     }
