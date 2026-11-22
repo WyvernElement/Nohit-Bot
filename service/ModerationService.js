@@ -36,6 +36,18 @@ class ModerationService{
 
         return true;
     }
+
+    async toggleAllSubmissions(guildId){
+        const config = await this.getConfig(guildId);
+        config.toggleSubmissions();
+        await this.configData.setConfig(guildId, config);
+        return config.submissionsAllowed;
+    }
+
+    async getSubmissionsAllowed(guildId){
+        const config = await this.getConfig(guildId);
+        return config.submissionsAllowed;
+    }
 }
 const moderation = new ModerationService();
 module.exports = moderation;

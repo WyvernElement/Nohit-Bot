@@ -36,6 +36,10 @@ async function run(message, args, client, user) {
         return message.reply("Usage: `!submit <difficulty> <boss> <video url> [comment]` — one word per parameter, no spaces.\nExample: `!submit Death ks https://youtu.be/example first try`");
     }
 
+    if(!await ModerationService.getSubmissionsAllowed(message.guildId)){
+        return message.reply("This server is not currently accepting submissions.");
+    }
+
     const parsed = parseForKeywords(message.guildId, args);
 
     if (!parsed.DiffObj.isSubmittable){

@@ -1,4 +1,5 @@
 const NohitService = require("../../service/NohitService.js");
+const ModerationService = require("../../service/ModerationService.js");
 
 function parseCreateDifficultyArgs(guild, args) {
     if (args.length < 2) {
@@ -15,6 +16,12 @@ function parseCreateDifficultyArgs(guild, args) {
 async function run(message, args, client, user) {
     if (args.length === 0){
         return message.reply("Usage: `!toggle <difficulties>`.\nExample: `!toggle Death` or `!ts ceg smg lmg`");
+    }
+    if(args.length === 1) {
+        if(args[0] === "all"){
+            const allowed = await ModerationService.toggleAllSubmissions(message.guildId);
+            return message.reply(`${allowed ? "Enabled" : "Disabled"} all submissions!`);
+        }
     }
     const fails = [];
     const enable = [];

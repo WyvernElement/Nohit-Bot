@@ -56,7 +56,7 @@ function replacer(key, value) {
     return value;
 }
 function parser(value) {
-    if (value.dataType === 'Map') {
+    if (value?.dataType === 'Map') {
         return new Map(value.value);
     }
     return value;

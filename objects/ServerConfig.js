@@ -8,11 +8,13 @@ class ServerConfig{
     databaseBackupChannel;
     journeyQueueMessage;
     rrQueueMessage;
-    reviewChannels;
+    reviewChannels = null;
+    submissionsAllowed;
 
     constructor(guildId, submissionChannel, submissionLogChannel, journeyLogChannel, nohitQueueChannel, databaseBackupChannel, journeyQueueMessage, rrQueueMessage) {
         this.guildId = guildId;
         this.reconfigure(submissionChannel, submissionLogChannel, journeyLogChannel, nohitQueueChannel, databaseBackupChannel, journeyQueueMessage, rrQueueMessage);
+        this.submissionsAllowed = true;
     }
 
     reconfigure(submissionChannel, submissionLogChannel, journeyLogChannel, nohitQueueChannel, databaseBackupChannel, journeyQueueMessage, rrQueueMessage){
@@ -38,6 +40,12 @@ class ServerConfig{
         }
         return false;
     }
+
+    toggleSubmissions(){
+        this.submissionsAllowed = !this.submissionsAllowed;
+    }
+
+
 }
 
 module.exports = {ServerConfig};
