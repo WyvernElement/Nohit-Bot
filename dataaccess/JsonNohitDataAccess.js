@@ -12,7 +12,8 @@ class JsonNohitDataAccess {
         journeysJsonPath = "/Backup/JourneysData.json",
         difficultiesJsonPath = "/Backup/DifficultiesData.json",
         aliasesJsonPath = "/Backup/AliasesData.json",
-        rrJsonPath = "/Backup/NohitsToReview.json"
+        rrJsonPath = "/Backup/NohitsToReview.json",
+        completeJsonPath = "/Backup/CompleteJourneys.json"
     ) {
         this.dataFolderPath = dataFolderPath;
         this.nohitsJsonPath = nohitsJsonPath;
@@ -20,11 +21,13 @@ class JsonNohitDataAccess {
         this.difficultiesJsonPath = difficultiesJsonPath;
         this.aliasesJsonPath = aliasesJsonPath;
         this.rrJsonPath = rrJsonPath;
+        this.completeJsonPath = completeJsonPath;
         this.nohits = this.importNohits();
         this.journeys = this.importJourneys();
         this.difficulties = this.importDifficulties();
         this.aliases = this.importMap(this.aliasPath, "alias", "boss");
         this.rrNohits = this.importMap(this.rrPath, "id", "message");
+        this.completedJourneys = this.importArray(this.completePath);
     }
 
     getSubfolders(){
@@ -55,6 +58,10 @@ class JsonNohitDataAccess {
 
     rrPath(id, item){
         return path.join(item.dataFolderPath, id, item.rrJsonPath);
+    }
+
+    completePath(id, item){
+        return path.join(item.dataFolderPath, id, item.completeJsonPath);
     }
 
 
@@ -148,6 +155,39 @@ class JsonNohitDataAccess {
         return sMap;
     }
 
+    importArray(path){
+        const map = new Map();
+        for(const id of this.getSubfolders()){
+            if(fs.existsSync(path(id, this))){
+                const rawJson = fs.readFileSync(path(id, this), "utf-8");
+                const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
+                const arr = [];
+                for (const item of parsedJson) {
+                    arr.push(item);
+                }
+                map.set(id, arr);
+            }
+            else{
+                map.set(id, []);
+            }
+        }
+        return map;
+    }
+
+    importIgnoredJourneys(guildId) {
+        const igJpath = path.join(__dirname, "../Data", guildId, "/Backup/IgnoredJourneys.json");
+        if (fs.existsSync(igJpath)) {
+            const rawJson = fs.readFileSync(igJpath, "utf-8");
+            const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
+            const igJ = [];
+            for (const item of parsedJson) {
+                igJ.push(item);
+            }
+            return igJ;
+        }
+        return [];
+    }
+
     async buildJourneysFromNohitBotv2(guildId){
         for (const [id, nohit] of this.nohits.get(guildId)){
             let journey = await this.getJourneyByData(guildId, nohit.UserID, nohit.Difficulty)
@@ -194,6 +234,18 @@ class JsonNohitDataAccess {
         this.saveNohits(guildId);
     }
 
+    async deleteNohit(guildId, nohit){
+        nohit.UserID = 0;
+        nohit.Boss = "Deleted";
+        nohit.Difficulty = "Deleted";
+        nohit.Url = "Deleted";
+        nohit.UserComment = "Deleted";
+        nohit.Verification = "Deleted";
+        nohit.JudgeComment = "Deleted";
+        nohit.JudgeID = 0;
+        this.submitNohit(guildId, nohit);
+    }
+
     async getNohit(guildId, id) {
         const numericId = Number(id);
         return this.nohits.get(guildId).get(numericId);
@@ -204,7 +256,7 @@ class JsonNohitDataAccess {
         for (const nohit of this.nohits.get(guildId).values()) {
             const sameUser = String(nohit.UserID) === String(userId);
             const sameDifficulty = nohit.Difficulty === difficulty;
-            const sameBoss = nohit.Boss.toLowerCase().replace(" ", "") === boss;
+            const sameBoss = nohit.Boss === boss;
             if (sameUser && sameDifficulty && sameBoss) {
                 if (!match || Number(nohit.ID) > Number(match.ID)) {
                     match = nohit;
@@ -279,6 +331,30 @@ class JsonNohitDataAccess {
         return undefined;
     }
 
+    async lookupCompletedJourney(guildId, id){
+        return this.completedJourneys.get(guildId).find((e) => e.ID === id);
+    }
+
+    async addCompletedJourney(guildId, id, bias){
+        if (!this.completedJourneys.get(guildId).some((e) => e.ID === id && e.Bias === bias)){
+            this.completedJourneys.get(guildId).push({ID: id, Bias: bias, Ignore: false});
+            this.saveCompleteJourneys(guildId);
+        }
+    }
+
+    async removeCompletedJourney(guildId, id){
+        this.completedJourneys.set(guildId, this.completedJourneys.get(guildId).filter((e) => e.ID != id));
+        this.saveCompleteJourneys(guildId);
+    }
+
+    async checkJourneyCompletion(guildId, id){
+        return this.completedJourneys.get(guildId).filter((e) => e.ID === id).length > 0;
+    }
+
+    async completedJourneysList(guildId){
+        return this.completedJourneys.get(guildId);
+    }
+
     getTotal(guildId){
         return this.nohits.get(guildId).size;
     }
@@ -306,6 +382,11 @@ class JsonNohitDataAccess {
     async saveRRs(guildId){
         const items = Array.from(this.rrNohits.get(guildId).entries()).map(([id, message]) => ({ id, message }));
         fs.writeFileSync(this.rrPath(guildId, this), JSON.stringify(items, null, 2));
+    }
+    
+    async saveCompleteJourneys(guildId){
+        const items = this.completedJourneys.get(guildId);
+        fs.writeFileSync(this.completePath(guildId, this), JSON.stringify(items, null, 2));
     }
 
 }

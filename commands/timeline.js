@@ -61,7 +61,7 @@ ${dq} = Disqualified, needs redo
     for (const nohit of await nohitsInSubmissionOrder(message.guildId, journey.NohitIDs)){
         const [year, month, day] = nohit.Timestamp.slice(0, 10).split('-');
         const formattedDate = `${month}/${day}/${year}`;
-        response += `\n${nohit.ID} - ${difficulty.bosses.find(boss => boss.name === nohit.Boss.toLowerCase().replaceAll(" ", ""))?.textName} - ${verificationEmoji(nohit)} - *${formattedDate}*`;
+        response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)} - *${formattedDate}*`;
     }
 
     if (journey.SpecialIDs?.length){

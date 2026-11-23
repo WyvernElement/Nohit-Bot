@@ -36,8 +36,8 @@ class NohitService {
     async lookupByBoss(guildId, userId, difficulty, boss){
         const resolved = this.resolveDifficulty(guildId, difficulty);
         const difficultyName = resolved ? resolved.standard : difficulty;
-        const resolvedBoss = resolved ? this.resolveBoss(guildId, resolved.base, boss) : undefined;
-        const bossName = resolvedBoss?.name ?? this.nohitData.getBoss(guildId, boss) ?? boss;
+        const resolvedBoss = resolved ? this.resolveBoss(guildId, resolved.base, this.nohitData.getBoss(guildId, boss) ?? boss) : undefined;
+        const bossName = resolvedBoss?.textName ?? boss;
         const nohit = await this.nohitData.getNohitByData(guildId, userId, difficultyName, bossName);
         return nohit;
     }
@@ -67,7 +67,7 @@ class NohitService {
 
     async getReviewsComment(guildId, bias){
         const ids = await this.nohitData.getAllReviews(guildId, bias);
-        let message = `⋆.˚ —★ ─⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢─ ★— ˚.⋆
+        let message = `** **\n\n\n⋆.˚ —★ ─⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢─ ★— ˚.⋆
 \n\t\t✰ **__Nohits currently pending a requested review:__** ✰`;
         if (ids.length === 0){
             message += "\n~✦~ None! ;3c"
@@ -75,7 +75,7 @@ class NohitService {
         else{
             for (const id of ids){
                 const nohit = await this.lookup(guildId, id);
-                message += `\n\t\t~✦~     **[${id}] ${nohit.Boss}** on **${nohit.Difficulty}** by <@${nohit.UserID}>     ~✦~`
+                message += `\n\t\t~✦~     **[${id}] ${nohit.Boss}** on **${nohit.Difficulty}** by <@${nohit.UserID}>`
             }
         }
         message += `\n\n⋆.˚ —★ ─⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢─ ★— ˚.⋆`
@@ -120,7 +120,7 @@ class NohitService {
         }
         const existingNohit = await this.lookupByBoss(guildId, userId, difficulty, boss);
         const id = existingNohit ? existingNohit.ID : (await this.totalNohits(guildId)) + 1;
-        const newNohit = new Nohit(id, userId, resolved.standard, resolvedBoss.name, url, comment);
+        const newNohit = new Nohit(id, userId, resolved.standard, resolvedBoss.textName, url, comment);
         const user = await this.userData.getUser(guildId, userId);
         let journey = await this.nohitData.getJourneyByData(guildId, userId, resolved.standard);
         if(!journey){
@@ -131,6 +131,11 @@ class NohitService {
         await this.nohitData.updateJourney(guildId, journey);
         await this.userData.updateUser(guildId, userId, user);
         return newNohit;
+    }
+
+    async deleteNohit(guildId, nohit){
+        await this.nohitData.deleteNohit(guildId, nohit);
+        this.updateJourneys(guildId);
     }
 
     async recomment(guildId, id, newComment){
@@ -169,6 +174,102 @@ class NohitService {
             }
         }
         this.nohitData.saveJourneys(guildId);
+    }
+
+    async lookupCompletedJourney(guildId, id){
+        return await this.nohitData.lookupCompletedJourney(guildId, id);
+    }
+
+    async addCompletedJourney(guildId, id, bias){
+        this.nohitData.addCompletedJourney(guildId, id, bias);
+        this.updatePinnedQueueMessages(guildId, bias);
+    }
+
+    async removeCompletedJourney(guildId, id, bias){
+        this.nohitData.removeCompletedJourney(guildId, id);
+        this.updatePinnedQueueMessages(guildId, bias);
+    }
+
+    async ignoreJourney(guildId, id){
+        const completed = await this.lookupCompletedJourney(guildId, id);
+        if (completed){
+            completed.Ignored = !completed.Ignored;
+            this.updatePinnedQueueMessages(guildId, completed.Bias);
+        }
+        return completed;
+    }
+
+    async updatePinnedQueueMessages(guildId, bias){
+        const config = await ModerationService.getConfig(guildId);
+        await this.updateJourneys(guildId);
+        DiscordService.editMessageInChannel(config.nohitQueueChannel, config.journeyQueueMessage, await this.getQueueComment(guildId));
+        const reviewChannel = config.reviewChannels.get(bias);
+        DiscordService.editMessageInChannel(reviewChannel.ID, reviewChannel.Queue, await this.getQueueComment(guildId, bias));
+    }
+
+    async getQueueComment(guildId, bias){
+        let message = `**┌──────── ⋆⋅☆⋆♡⋆☆⋅⋆ ────────┐**
+    ♡**__Finished nohit journeys that currently need judging__**♡`
+        let count = 0;
+        for (const obj of await this.getViableCompletedJourneys(guildId, bias, true)){
+            count++;
+            const journey = await this.lookupJourney(guildId, obj.ID);
+            message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty})`;
+        }
+        if (count === 0){
+            message += `\n\t֎ None! :3 ֎`;
+        }
+        message += `\n**└──────── ⋆⋅☆⋆♡⋆☆⋅⋆ ────────┘**
+
+•⋅⋅•⋅⊰⋅⋅•⋅⋅•⋅⊰⋅•⋅⋅•∙∘☽༓☾∘∙•⋅⋅•⋅⊰⋅•⋅⋅•⋅⋅⊰⋅•⋅⋅•
+    ❅**__Finished miscellaneous nohit journeys__ **❅
+    gonna be honest no idea how to handle this, fuck boss rush
+•⋅⋅•⋅⊰⋅⋅•⋅⋅•⋅⊰⋅•⋅⋅•∙∘☽༓☾∘∙•⋅⋅•⋅⊰⋅•⋅⋅•⋅⋅⊰⋅•⋅⋅•
+
+✿•∘ɷ∘•✿••✿•∘ɷ∘•✿•✿•∘ɷ∘•✿••✿•∘ɷ∘•✿
+    ✰**__Completed journeys with DQs__**✰`
+        count = 0;
+        for (const obj of await this.getViableCompletedJourneys(guildId, bias, false)){
+            count++;
+            const journey = await this.lookupJourney(guildId, obj.ID);
+            message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty} | ${journey.DQ})`;
+        }
+        if (count === 0){
+            message += `\n\t֎ None! :3 ֎`;
+        }
+        message += `\n✿•∘ɷ∘•✿••✿•∘ɷ∘•✿•✿•∘ɷ∘•✿••✿•∘ɷ∘•✿`
+        return message;
+    }
+
+    async checkJourneyCompletion(guildId, id){
+        return await this.nohitData.checkJourneyCompletion(guildId, id);
+    }
+
+    async completedJourneysList(guildId){
+        return await this.nohitData.completedJourneysList(guildId);
+    }
+
+    async getViableCompletedJourneys(guildId, bias, filterDQs){
+        let list = await this.nohitData.completedJourneysList(guildId);
+        let map = [];
+        for (const obj of list){
+            if (obj.Ignored){
+                map.push(false);
+                continue;
+            }
+            const journey = await this.lookupJourney(guildId, obj.ID);
+            if (bias && obj.Bias != bias){
+                map.push(false);
+                continue;
+            }
+            if (filterDQs){
+                map.push(journey.DQ === 0 && journey.Pending > 0);
+            }
+            else{
+                map.push(journey.DQ != 0);
+            }
+        }
+        return list.filter((e, i) => map[i]);
     }
 
     async stats(guildId){
@@ -243,9 +344,8 @@ class NohitService {
         if (!difficulty || typeof token !== "string") {
             return undefined;
         }
-        const lowerName = token.toLowerCase().replaceAll(' ', '');
-        const aliased = this.nohitData.getBoss(guildId, lowerName);
-        const names = aliased ? [token, lowerName, aliased] : [token, lowerName];
+        const aliased = this.nohitData.getBoss(guildId, token);
+        const names = aliased ? [token, aliased] : [token];
         return difficulty.bosses?.find(boss => names.includes(boss.name) || names.includes(boss.textName));
     }
 
@@ -330,7 +430,7 @@ class NohitService {
             }
         }
         if (mod){
-            if (!modifier){
+            if (!modifier || modifier === diff){
                 return diff;
             }
             if (!diff){

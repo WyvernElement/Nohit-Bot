@@ -8,12 +8,12 @@ const Description = "Finds a random nohit for you to gaze upon!";
 async function run(message, args, client, user){
     const parsed = parseForKeywords(message.guildId, args);
 
-    const bossName = parsed.Boss?.name;
+    const bossName = parsed.Boss?.textName;
     console.log(parsed.Diff);
     const verif = parseVerification(args[0]);
     const filteredNohits = NohitService.nohitData.nohits.get(message.guildId).values().filter((e) => 
         e.UserComment != "Deleted" && e.UserID != 0 &&
-        (bossName ? e.Boss.toLowerCase().replaceAll(" ", "") === bossName : true) &&
+        (bossName ? e.Boss === bossName : true) &&
         (parsed.Diff ? e.Difficulty === parsed.Diff : true) &&
         (verif ? e.Verification === verif : true)
     ).toArray();

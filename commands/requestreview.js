@@ -61,7 +61,7 @@ async function run(message, args, client, user){
         return message.reply("Unfortunately, I can't submit your request, as that difficulty is not being judged.");
     }
 
-    const msg = `**[!]** <@${message.author.id}> has requested a ${(nohit.Verification != "Pending") ? "re-" : ""}review for their ${parsed.Boss.textName} nohit on ${parsed.Diff}! ${(j)
+    const msg = `**[!]** <@${message.author.id}> has requested a ${(nohit.Verification != "Pending") ? "re-" : ""}review for their ${nohit.Boss} nohit on ${parsed.Diff}! ${(j)
         ? `<@${j}>, you were specifically requested to judge this nohit.`
         : "Whenever a judge is available, a review would be appreciated."
     } ${(args.length === 0)

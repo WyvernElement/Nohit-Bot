@@ -42,11 +42,10 @@ async function run(message, args, client, user) {
         DiscordService.deleteMessageInChannel(config.nohitQueueChannel, config.rrQueueMessage);
     }
     
-    
+    const queue = await DiscordService.sendMessageInChannel(await NohitService.getQueueComment(message.guildId), config.nohitQueueChannel);
+    queue.pin("Global journey queue message");
     const rr = await DiscordService.sendMessageInChannel(await NohitService.getReviewsComment(message.guildId), config.nohitQueueChannel);
     rr.pin("Global requested review queue message");
-    const queue = await DiscordService.sendMessageInChannel("This is the queue message", config.nohitQueueChannel);
-    queue.pin("Global journey queue message");
 
     await moderation.configure(
         message.guildId,

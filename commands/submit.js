@@ -65,7 +65,7 @@ async function run(message, args, client, user) {
         message.guildId,
         message.author.id,
         parsed.Diff,
-        parsed.Boss.name
+        parsed.Boss.textName
     );
 
     const nohit = await NohitService.submit(
@@ -86,21 +86,25 @@ async function run(message, args, client, user) {
     NohitService.removeReview(message.guildId, nohit.ID);
 
     const action = existing
-        ? `Resubmitted nohit **#${nohit.ID}** (${parsed.Boss.textName} on ${nohit.Difficulty}). Verification was reset to Pending.`
-        : `Submitted nohit **#${nohit.ID}** (${parsed.Boss.textName} on ${nohit.Difficulty}).`;
+        ? `Resubmitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}). Verification was reset to Pending.`
+        : `Submitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}).`;
 
     if(config.submissionLogChannel){
+        if (existing){
+            await NohitService.updateJourneys(message.guildId);
+        }
         const journey = await NohitService.lookupByUser(message.guildId,  nohit.UserID, nohit.Difficulty);
         const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
         const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
         const remain = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
-        const boss = await NohitService.resolveBoss(message.guildId, difficulty, nohit.Boss);
 
-        const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${boss.textName}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
+        const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${nohit.Boss}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
 
         await DiscordService.sendMessageInChannel(msg, config.submissionLogChannel);
 
         if (remain === 0){
+            NohitService.addCompletedJourney(message.guildId, journey.ID, difficulty.bias);
+
             const judges = Array.from(NohitService.userData.judges.get(message.guildId).values());
             const randJudge = judges[Math.floor(Math.random() * judges.length)];
             const msg = `<@${nohit.UserID}> has completed their nohit journey on **${nohit.Difficulty}** mode!! :tada:\nNow to wait 2.2 billion years for ${randJudge.DefaultAlias} to ${randJudge.Quote}, enjoy the waiting room! ${randJudge.Emoji}`;

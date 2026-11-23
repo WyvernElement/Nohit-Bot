@@ -89,7 +89,7 @@ ${dq} = Disqualified, needs redo
             response += `\n${nohit.Boss}`;
             continue;
         }
-        response += `\n${nohit.ID} - ${difficulty.bosses.find(boss => boss.name === nohit.Boss.toLowerCase().replaceAll(" ", ""))?.textName} - ${verificationEmoji(nohit)}`;
+        response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
     }
 
     if (journey.SpecialIDs?.length){

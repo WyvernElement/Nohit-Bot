@@ -30,7 +30,7 @@ class ModerationService{
 
     async moderate(message, client){
         const config = await this.getConfig(message.guildId);
-        if (config.submissionChannel === message.channelId && message.author.id != client.user.id && !message.content.startsWith("!s")){
+        if (config?.submissionChannel === message.channelId && message.author.id != client.user.id && !message.content.startsWith("!s")){
             message.delete();
             return false;
         }

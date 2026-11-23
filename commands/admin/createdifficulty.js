@@ -31,8 +31,8 @@ async function run(message, args, client, user) {
         );
     }
 
-    const config = await ModerationService.getConfig(message.guildId)
-    const parsedBias = config.reviewChannels.keys().find(e => e.includes(parsed.bias))
+    const config = await ModerationService.getConfig(message.guildId);
+    const parsedBias = config.reviewChannels.keys().find(e => e.includes(parsed.bias));
     if (!parsedBias) {
         return message.reply(`The bias **${parsed.bias}** is incomprehensible.`);
     }

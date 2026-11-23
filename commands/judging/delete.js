@@ -45,18 +45,9 @@ ${(args.length === 0)
         : `Reason: "${args.join(" ")}"`
     }`);
     
-    nohit.UserID = 0;
-    nohit.Boss = "Deleted";
-    nohit.Difficulty = "Deleted";
-    nohit.Url = "Deleted";
-    nohit.UserComment = "Deleted";
-    nohit.Verification = "Deleted";
-    nohit.JudgeComment = "Deleted";
-    nohit.JudgeID = 0;
+    NohitService.deleteNohit(message.guildId, nohit);
 
-    NohitService.nohitData.saveNohits(message.guildId);
-
-    return message.reply("Nohit deleted, I hope that was necessary.");
+    return message.reply(`Nohit **[${nohit.ID}]** deleted, I hope that was necessary.`);
 }
 
 module.exports = {
