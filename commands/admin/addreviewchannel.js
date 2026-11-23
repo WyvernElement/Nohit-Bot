@@ -1,5 +1,6 @@
 const moderation = require("../../service/ModerationService.js");
 const DiscordService = require("../../service/DiscordService.js");
+const NohitService = require("../../service/NohitService.js");
 
 function parseChannel(value) {
     if (!value) {
@@ -46,15 +47,17 @@ async function run(message, args, client, user) {
         }
     }
 
-    const qmsg = `Temporary queue placeholder for ${parsed.bias}, still trying to think of how to handle updating this`;
-    const rrmsg = `same but for requested reviews`;
 
+    const rrMsg = await DiscordService.sendMessageInChannel(await NohitService.getReviewsComment(message.guildId, parsed.bias), parsed.reviewChannel);
+    rrMsg.pin();
+    const qMsg = await DiscordService.sendMessageInChannel(`Temporary queue placeholder for ${parsed.bias}, still trying to think of how to handle updating this`, parsed.reviewChannel);
+    qMsg.pin();
 
     config.addReviewChannel(
         parsed.bias,
         parsed.reviewChannel,
-        (await DiscordService.sendMessageInChannel(qmsg, parsed.reviewChannel)).id,
-        (await DiscordService.sendMessageInChannel(rrmsg, parsed.reviewChannel)).id
+        qMsg.id,
+        rrMsg.id
     );
     moderation.configData.setConfig(message.guildId, config);
 

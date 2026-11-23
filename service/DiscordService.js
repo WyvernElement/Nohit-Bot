@@ -47,5 +47,11 @@ class DiscordService{
         await message.delete();
     }
 
+    async editMessageInChannel(channelId, messageId, edit){
+        const channel = await this.client.channels.fetch(channelId);
+        const message = await channel.messages.fetch(messageId);
+        return message.edit(edit);
+    }
+
 }
 module.exports = new DiscordService();

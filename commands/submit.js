@@ -72,7 +72,7 @@ async function run(message, args, client, user) {
         message.guildId,
         message.author.id,
         parsed.Diff,
-        parsed.Boss.name,
+        parsed.Boss.textName,
         url,
         args.join(" ")
     );
@@ -82,6 +82,8 @@ async function run(message, args, client, user) {
             "That submission didn't work. I'd tell you to double check the arguments you gave, but I honestly have no idea what the issue could be either."
         );
     }
+
+    NohitService.removeReview(message.guildId, nohit.ID);
 
     const action = existing
         ? `Resubmitted nohit **#${nohit.ID}** (${parsed.Boss.textName} on ${nohit.Difficulty}). Verification was reset to Pending.`

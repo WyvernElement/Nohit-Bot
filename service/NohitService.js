@@ -5,6 +5,9 @@ const { Difficulty } = require("../objects/Difficulty");
 const { Boss } = require("../objects/Boss");
 const {Journey} = require("../objects/Journey");
 
+const DiscordService = require("../service/DiscordService.js");
+const ModerationService = require("../service/ModerationService");
+
 class NohitService {
 
     constructor(
@@ -45,10 +48,38 @@ class NohitService {
 
     async addReview(guildId, id, messageId, bias){
         await this.nohitData.addReview(guildId, id, messageId, bias);
+        const config = await ModerationService.getConfig(guildId);
+        DiscordService.editMessageInChannel(config.nohitQueueChannel, config.rrQueueMessage, await this.getReviewsComment(guildId));
+        const reviewChannel = config.reviewChannels.get(bias);
+        DiscordService.editMessageInChannel(reviewChannel.ID, reviewChannel.RR, await this.getReviewsComment(guildId, bias));
     }
 
     async removeReview(guildId, id){
-        await this.nohitData.removeReview(guildId, id);
+        const bias = (await this.nohitData.getReview(guildId, id))?.Bias;
+        if (bias){
+            await this.nohitData.removeReview(guildId, id);
+            const config = await ModerationService.getConfig(guildId);
+            DiscordService.editMessageInChannel(config.nohitQueueChannel, config.rrQueueMessage, await this.getReviewsComment(guildId));
+            const reviewChannel = config.reviewChannels.get(bias);
+            DiscordService.editMessageInChannel(reviewChannel.ID, reviewChannel.RR, await this.getReviewsComment(guildId, bias));
+        }
+    }
+
+    async getReviewsComment(guildId, bias){
+        const ids = await this.nohitData.getAllReviews(guildId, bias);
+        let message = `⋆.˚ —★ ─⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢─ ★— ˚.⋆
+\n\t\t✰ **__Nohits currently pending a requested review:__** ✰`;
+        if (ids.length === 0){
+            message += "\n~✦~ None! ;3c"
+        }
+        else{
+            for (const id of ids){
+                const nohit = await this.lookup(guildId, id);
+                message += `\n\t\t~✦~     **[${id}] ${nohit.Boss}** on **${nohit.Difficulty}** by <@${nohit.UserID}>     ~✦~`
+            }
+        }
+        message += `\n\n⋆.˚ —★ ─⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢───⟢─ ★— ˚.⋆`
+        return message;
     }
 
     async catalogue(guildId, difficulty, boss, count, verified){

@@ -1,5 +1,6 @@
 const moderation = require("../../service/ModerationService.js");
 const DiscordService = require("../../service/DiscordService.js");
+const NohitService = require("../../service/NohitService.js");
 
 function parseChannel(value) {
     if (!value) {
@@ -42,8 +43,10 @@ async function run(message, args, client, user) {
     }
     
     
+    const rr = await DiscordService.sendMessageInChannel(await NohitService.getReviewsComment(message.guildId), config.nohitQueueChannel);
+    rr.pin("Global requested review queue message");
     const queue = await DiscordService.sendMessageInChannel("This is the queue message", config.nohitQueueChannel);
-    const rr = await DiscordService.sendMessageInChannel("And this is the rr message", config.nohitQueueChannel);
+    queue.pin("Global journey queue message");
 
     await moderation.configure(
         message.guildId,

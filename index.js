@@ -57,31 +57,29 @@ addAdminAlias("addboss", ["ab"]);
 
 service.setClient(client);
 client.on('messageCreate', async (message) => {
-  if(message.author.bot){
-      return;
-  }
+  if (await ModerationService.moderate(message, client)){
 
-  const maps = NohitService.userData.users.values();
-  const userInstances = [];
-  for (const map of maps){
-    userInstances.push(map.get(message.author.id));
-  }
-  if (!message.guildId){
-    const newId = userInstances[0].recentGuildId
-    if (newId){
-      message.guildId = newId;
+    const maps = NohitService.userData.users.values();
+    const userInstances = [];
+    for (const map of maps){
+      userInstances.push(map.get(message.author.id));
+    }
+    if (!message.guildId){
+      const newId = userInstances[0].recentGuildId
+      if (newId){
+        message.guildId = newId;
+      }
+      else{
+        return message.reply("Interact with the bot in a server to access it in DMs!");
+      }
     }
     else{
-      return message.reply("Interact with the bot in a server to access it in DMs!");
+      for (const user of userInstances){
+        user.recentGuildId = message.guildId;
+      }
     }
-  }
-  else{
-    for (const user of userInstances){
-      user.recentGuildId = message.guildId;
-    }
-  }
+    
 
-  if (await ModerationService.moderate(message, client)){
     if (message.content.startsWith("!")){
       const args = message.content.slice(1).split(" ");
       const commandAlias = args.shift().toLowerCase();
