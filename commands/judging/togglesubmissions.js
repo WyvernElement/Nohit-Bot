@@ -29,23 +29,17 @@ async function run(message, args, client, user) {
     const enable = [];
     const disable = [];
     for (const item of args){
-        const resolved = NohitService.resolveDifficulty(message.guildId, item);
-        if (!resolved){
+        const result = await NohitService.toggleSubmissions(message.guildId, item);
+        if(result === null){
             fails.push(item);
         }
+        else if(result === true){
+            enable.push(item);
+        }
         else{
-            const bool = !resolved.base.isSubmittable
-            if (bool){
-                enable.push(item);
-            }
-            else{
-                disable.push(item);
-            }
-            resolved.base.isSubmittable = bool;
+            disable.push(item);
         }
     }
-
-    NohitService.nohitData.saveDifficulties(message.guildId);
 
     let response = "";
     if (enable.length > 0){

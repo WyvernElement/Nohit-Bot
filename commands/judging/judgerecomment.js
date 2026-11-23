@@ -10,13 +10,10 @@ async function run(message, args, client, user) {
     }
 
     const parsed = parseForKeywords(message.guildId, args);
-
-    let nohit;
+    const comment = args.join(" ");
+    let recommentResult;
     if (parsed.num){
-        nohit = await NohitService.lookup(message.guildId, parsed.num);
-        if (!nohit){
-            return message.reply("Not a valid nohit ID.");
-        }
+        recommentResult = await NohitService.judgeRecommentID(message.guildId, parsed.num, comment, message.author.id);
     }
     else{
         if (!parsed.Diff){
@@ -28,26 +25,20 @@ async function run(message, args, client, user) {
         if (!parsed.ID){
             return message.reply("Hey, uh... I can't find a nohit without a user ID. And it's not like you can judge your own nohits.");
         }
-        nohit = await NohitService.lookupByBoss(message.guildId, parsed.ID, parsed.Diff, parsed.Boss.name);
-        if (!nohit){
-            return message.reply("That nohit doesn't exist. They probably didn't submit anything for it.");
+        recommentResult = await NohitService.judgeRecomment(message.guildId, parsed.ID, parsed.Diff, parsed.Boss, comment, message.author.id);
+
+    }
+    switch (recommentResult){
+        case null: return message.reply("That nohit does not exist!");
+        case "Pending": return message.reply("That nohit hasn't even been verified yet! Go review it or something.");
+        case "Not Allowed": return message.reply("You didn't review that nohit, lol!");
+        default: {
+            const msg = await DiscordService.findDirectMessage(recommentResult.userId, recommentResult.id);
+            const newmsg = String(msg.content.slice(0, msg.content.indexOf('\n') + 1)) + `${(comment.length === 0) ? "No comment was left." : `They also left a comment for you: "${comment}"`}`
+            await DiscordService.editMessage(msg, newmsg);
+            return message.reply("Judge comment successfully rewritten. DM message updated.");
         }
     }
-    if (nohit.Verification === "Pending"){
-        return message.reply("That one hasn't even been reviewed. Hey, if you want to go judge it, be my guest.");
-    }
-    if (nohit.JudgeID != message.author.id){
-        return message.reply("You're not allowed to do that lol that's not your review");
-    }
-
-    const comment = args.join(" ");
-    const channel = await DiscordService.getDM(nohit.UserID);
-    const messages = await channel.messages.fetch({ limit: 100, cache: false });
-    const msg = messages.find((msg) => msg.content.includes(nohit.ID));
-    await msg.edit(String(msg.content.slice(0, msg.content.indexOf('\n') + 1)) + `${(comment.length === 0) ? "No comment was left." : `They also left a comment for you: "${comment}"`}`);
-    nohit.JudgeComment = comment;
-    NohitService.nohitData.saveNohits(message.guildId);
-    return message.reply("Judge comment successfully rewritten. DM message updated.");
 }
 
 module.exports = {

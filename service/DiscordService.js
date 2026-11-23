@@ -41,6 +41,18 @@ class DiscordService{
         });
     }
 
+    async editMessage(message, newMessage){
+        await message.edit(newMessage);
+    }
+
+    async findDirectMessage(userId, content){
+        const channel = await this.getDM(userId);
+        const messages = await channel.messages.fetch({ limit: 100, cache: false });
+        const msg = messages.find((msg) => msg.content.includes(content));
+        return msg;
+    }
+
+
     async deleteMessageInChannel(channelId, messageId){
         const channel = await this.client.channels.fetch(channelId);
         const message = await channel.messages.fetch(messageId);

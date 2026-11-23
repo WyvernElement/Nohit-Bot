@@ -48,14 +48,15 @@ addJudgeAlias("ignorejourney", ["ij", "ignore"]);
 addJudgeAlias("addalias", ["aa"]);
 addJudgeAlias("allowmodifier", ["allowmodifiers", "am"]);
 addJudgeAlias("togglesubmissions", ["toggle", "ts"]);
+addJudgeAlias("createdifficulty", ["cd"]);
+addJudgeAlias("copydifficulty", ["cpd"]);
+addJudgeAlias("addboss", ["ab"]);
 
 const ADMIN = new Map();
-addAdminAlias("createdifficulty", ["cd"]);
-addAdminAlias("copydifficulty", ["cpd"]);
 addAdminAlias("config");
 addAdminAlias("addreviewchannel", ["arc"]);
 addAdminAlias("setup");
-addAdminAlias("addboss", ["ab"]);
+
 
 service.setClient(client);
 client.on('messageCreate', async (message) => {
