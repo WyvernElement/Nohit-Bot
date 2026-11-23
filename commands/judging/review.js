@@ -64,8 +64,9 @@ ${(comment.length > 0)
     const journey = await NohitService.lookupByUser(message.guildId, parsed.UserID, parsed.Difficulty);
     const next = await findNext(message.guildId, journey) ?? { id: undefined };
     judge.Next = next.ID;
-
+    console.log(next);
     const diff = await NohitService.resolveDifficulty(message.guildId, next.Difficulty);
+    console.log(diff)
     const boss = await NohitService.resolveBoss(message.guildId, diff.base, next.Boss);
     return message.reply(`Nohit **${parsed.ID}** reviewed!${(next.ID) ? `\nNext nohit: **${next.ID} - [${boss.textName}](<${next.Url}>)**` : ""}`);
 }

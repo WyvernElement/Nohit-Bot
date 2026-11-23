@@ -383,7 +383,31 @@ class NohitService {
             this.nohitData.addDifficulty(guildId, base);
             return base.isSubmittable;
         }
+    }
 
+    async judgeRecommentID(guildId, id, newComment, judgeId){
+        const nohit = await this.lookup(guildId, id);
+        return await this.judgeRecommentHelper(guildId, nohit, newComment, judgeId);
+    }
+    async judgeRecomment(guildId, userId, difficulty, boss, newComment, judgeId){
+        const nohit = await this.lookupByBoss(guildId, userId, difficulty, boss)
+        return await this.judgeRecommentHelper(guildId, nohit, newComment, judgeId);
+    }
+
+    async judgeRecommentHelper(guildId, nohit, newComment, judgeId){
+        if(!nohit){
+            return null;
+        }
+        if(nohit.Verification === "Pending"){
+            return "Pending";
+        }
+        if(judgeId !== nohit.JudgeID){
+            return "Not Allowed";
+        }
+        nohit.JudgeComment = newComment;
+        await this.nohitData.submitNohit(guildId, nohit);
+        return {userId: nohit.UserID,
+        id: nohit.ID};
     }
 
 }
