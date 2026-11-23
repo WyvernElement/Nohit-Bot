@@ -41,6 +41,10 @@ class ServerConfig{
         return false;
     }
 
+    addReviewChannel(bias, id, qid, rrid){
+        this.reviewChannels.set(bias, { ID: id, Queue: qid, RR: rrid });
+    }
+
     toggleSubmissions(){
         this.submissionsAllowed = !this.submissionsAllowed;
     }

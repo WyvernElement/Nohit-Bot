@@ -6,7 +6,7 @@ const Description = "Shows what nohits a journey given by ID or difficulty and u
 
 async function run(message, args, client, user){
     if (args.length === 0){
-        return message.reply( "Usage: `!progress <id>` or `!progress <difficulty> <user>`.\nExample: `!progress 101`, `!p d 1233943368426328094`")
+        return message.reply( "Usage: `!remaining <id>` or `!progress <difficulty> <user>`.\nExample: `!remaining 101`, `!rem d 1233943368426328094`")
     }
 
     const parsed = parseForKeywords(message.guildId, args);

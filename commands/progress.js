@@ -45,9 +45,7 @@ async function nohitsInProgressionOrder(guildId, difficulty, ids, titles){
     if (titles){
         nohits.push({ Boss: "**__Pre-Hardmode__**", progressionOrder: 0 })
         nohits.push({ Boss: "**__Hardmode__**", progressionOrder: progressionOrder(difficulty, { Boss: "wallofflesh" }) + 0.1 })
-        console.log(progressionOrder(difficulty, { Boss: "wallofflesh" }) + 0.1);
         nohits.push({ Boss: "**__Post-Moon Lord__**", progressionOrder: progressionOrder(difficulty, { Boss: "moonlord" }) + 0.1 })
-        console.log(progressionOrder(difficulty, { Boss: "moonlord" }) + 0.1)
     }
     nohits.sort((a, b) => compareNohits(difficulty, a, b));
     return nohits;
@@ -79,8 +77,8 @@ async function run(message, args, client, user){
     }
     let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
 ID: ${journey.ID}${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
-:V_: = Verified
-:dq: = Disqualified, needs redo
+${v} = Verified
+${dq} = Disqualified, needs redo
 :question: = Submitted, yet to be reviewed\n`;
 
     const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
@@ -99,6 +97,10 @@ ID: ${journey.ID}${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" :
         for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.SpecialIDs, false)){
             response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
         }
+    }
+
+    if (journey.Comment.length > 0){
+        response += `\n\n**__Commentary:__**\n"${journey.Comment}"`;
     }
 
     const remaining = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;

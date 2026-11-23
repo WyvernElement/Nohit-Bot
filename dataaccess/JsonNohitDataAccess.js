@@ -219,6 +219,26 @@ class JsonNohitDataAccess {
         return this.rrNohits.get(guildId).get(numericId);
     }
 
+    async addReview(guildId, id, messageId, bias){
+        this.rrNohits.get(guildId).set(id, { ID: messageId, Bias: bias });
+        this.saveRRs(guildId);
+    }
+
+    async removeReview(guildId, id){
+        this.rrNohits.get(guildId).delete(id);
+        this.saveRRs(guildId);
+    }
+
+    async getAllReviews(guildId, bias){
+        let reviews = [];
+        for (const [id, rr] of this.rrNohits.get(guildId)){
+            if (!bias || bias === rr.Bias){
+                reviews.push(id);
+            }
+        }
+        return reviews;
+    }
+
     catalogue(guildId, difficulty, boss, count, verified){
         let nohitsFound = [];
         for(const nohit of this.nohits.get(guildId).values()){

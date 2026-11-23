@@ -51,8 +51,8 @@ async function run(message, args, client, user){
     }
     let response = `**__${await DiscordService.getDisplayName(journey.UserID, message.guild.id)} on ${journey.Difficulty}__**
 ID: ${journey.ID}${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" : ""}
-:V_: = Verified
-:dq: = Disqualified, needs redo
+${v} = Verified
+${dq} = Disqualified, needs redo
 :question: = Submitted, yet to be reviewed\n`;
 
     const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
@@ -69,6 +69,10 @@ ID: ${journey.ID}${journey.Playlist ? "\nPlaylist: <" + journey.Playlist + ">" :
         for (const nohit of await nohitsInSubmissionOrder(message.guildId, journey.SpecialIDs)){
             response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
         }
+    }
+
+    if (journey.Comment.length > 0){
+        response += `\n\n**__Commentary:__**\n"${journey.Comment}"`;
     }
 
     const remaining = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;

@@ -56,7 +56,7 @@ async function run(message, args, client, user){
     }
 
     const config = await ModerationService.getConfig(message.guildId);
-    const channelId = config.getReview(parsed.DiffObj.bias);
+    const channelId = config.getReview(parsed.DiffObj.bias).ID;
     if (!channelId){
         return message.reply("Unfortunately, I can't submit your request, as that difficulty is not being judged.");
     }
@@ -70,8 +70,7 @@ async function run(message, args, client, user){
 
     const replyPayload = await buildNohitEmbed(nohit, message.guildId);
     const rr = await DiscordService.sendMessageInChannel(msg, channelId, [replyPayload]);
-    NohitService.nohitData.rrNohits.get(message.guildId).set(nohit.ID, rr.id);
-    NohitService.nohitData.saveRRs(message.guildId);
+    NohitService.addReview(message.guildId, nohit.ID, rr.id, parsed.DiffObj.bias);
     
     return message.reply(`Your request has been submitted to ${(j) ? await DiscordService.getDisplayName(j, message.guildId) : "the judges"}!`);
 

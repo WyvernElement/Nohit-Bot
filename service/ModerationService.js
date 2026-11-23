@@ -1,6 +1,7 @@
 const JsonUserDataAccess = require("../dataaccess/JsonUserDataAccess");
 const JsonConfigDataAccess = require("../dataaccess/JsonConfigDataAccess");
 const {ServerConfig} = require("../objects/ServerConfig");
+const { MessageType } = require('discord.js');
 
 class ModerationService{
 
@@ -29,8 +30,17 @@ class ModerationService{
 
     async moderate(message, client){
         const config = await this.getConfig(message.guildId);
-        if (config.submissionChannel === message.channelId && !message.content.startsWith("!s")){
+        if (config.submissionChannel === message.channelId && message.author.id != client.user.id && !message.content.startsWith("!s")){
             message.delete();
+            return false;
+        }
+
+        if (message.type === MessageType.ChannelPinnedMessage && message.author.id === client.user.id){
+            message.delete();
+            return false;
+        }
+
+        if (message.author.bot){
             return false;
         }
 

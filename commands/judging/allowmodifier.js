@@ -1,5 +1,7 @@
 const NohitService = require("../../service/NohitService.js");
 
+const Description = "Allows a given difficulty to recognize a given list of modifiers. Do **__NOT__** use this unless all the judges are in agreement.";
+
 function parseCreateDifficultyArgs(guild, args) {
     if (args.length < 2) {
         return undefined;
@@ -40,4 +42,5 @@ async function run(message, args, client, user) {
 
 module.exports = {
     run,
+    Description
 };

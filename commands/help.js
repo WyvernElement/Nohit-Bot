@@ -4,7 +4,7 @@ const NohitService = require("../service/NohitService.js");
 const Description = "Displays a list of commands, what they're used for, and how to use them.";
 
 async function run(message, args, client, user){
-    const replyPayload = await buildHelpEmbed(NohitService.checkJudge(message.guildId, message.author.id));
+    const replyPayload = await buildHelpEmbed(NohitService.checkJudge(message.guildId, message.author.id), undefined, args[0]);
     return message.reply({embeds: [replyPayload]});
 }
 

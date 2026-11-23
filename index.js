@@ -32,7 +32,8 @@ addAlias("aliases", "a");
 addAlias("requestreview", ["rr"]);
 addAlias("removerequest", ["rrr"]);
 addAlias("playlist", ["pl", "addplaylist"]);
-addAlias("recomment", ["rewritecomment"]);
+addAlias("journeycomment", ["jcommment", "jc"]);
+addAlias("recomment", ["rewritecomment", "rc"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
 addAlias("veterans", "v");
@@ -57,31 +58,29 @@ addAdminAlias("setup");
 
 service.setClient(client);
 client.on('messageCreate', async (message) => {
-  if(message.author.bot){
-      return;
-  }
+  if (await ModerationService.moderate(message, client)){
 
-  const maps = NohitService.userData.users.values();
-  const userInstances = [];
-  for (const map of maps){
-    userInstances.push(map.get(message.author.id));
-  }
-  if (!message.guildId){
-    const newId = userInstances[0].recentGuildId
-    if (newId){
-      message.guildId = newId;
+    const maps = NohitService.userData.users.values();
+    const userInstances = [];
+    for (const map of maps){
+      userInstances.push(map.get(message.author.id));
+    }
+    if (!message.guildId){
+      const newId = userInstances[0].recentGuildId
+      if (newId){
+        message.guildId = newId;
+      }
+      else{
+        return message.reply("Interact with the bot in a server to access it in DMs!");
+      }
     }
     else{
-      return message.reply("Interact with the bot in a server to access it in DMs!");
+      for (const user of userInstances){
+        user.recentGuildId = message.guildId;
+      }
     }
-  }
-  else{
-    for (const user of userInstances){
-      user.recentGuildId = message.guildId;
-    }
-  }
+    
 
-  if (await ModerationService.moderate(message, client)){
     if (message.content.startsWith("!")){
       const args = message.content.slice(1).split(" ");
       const commandAlias = args.shift().toLowerCase();
@@ -102,7 +101,7 @@ client.on('messageCreate', async (message) => {
           }
         }
       }
-      if(COMMANDS.has(commandAlias)){
+      else if(COMMANDS.has(commandAlias)){
         try{
             const commandName = COMMANDS.get(commandAlias);
             const command = require(`./commands/${commandName}.js`);
@@ -112,7 +111,7 @@ client.on('messageCreate', async (message) => {
             console.log(err);
         }
       }
-      if(ADMIN.has(commandAlias)){
+      else if(ADMIN.has(commandAlias)){
         if (false){
           message.reply("only registered bot admins can use this command")
         }

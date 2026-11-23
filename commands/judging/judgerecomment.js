@@ -2,6 +2,8 @@ const DiscordService = require('../../service/DiscordService.js');
 const NohitService = require("../../service/NohitService.js");
 const {parseForKeywords} = require("../../discord/argument_util");
 
+const Description = "Adds, changes, or removes a judge comment on a given nohit.";
+
 async function run(message, args, client, user) {
     if (args.length === 0){
         return message.reply("Usage: `!judgerecomment <id> <comment>` or `!jr <boss> <difficulty> <userid> <comment>`.\nExample: `!judgerecomment 11578 *sorry, you were 5 seconds under mnl.` or `!jr d ks 1233943368426328094 actually this isn't bad i take it back`");
@@ -41,4 +43,5 @@ async function run(message, args, client, user) {
 
 module.exports = {
     run,
+    Description
 };

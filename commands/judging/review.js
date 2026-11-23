@@ -1,6 +1,9 @@
 const DiscordService = require("../../service/DiscordService");
 const NohitService = require("../../service/NohitService.js");
 const {v, dq} = require("../../discord/emoji_util");
+const { Nohit } = require("../../objects/Nohit.js");
+
+const Description = `Judges a given nohit by ID. "next", "random", and "undo" are also accepted as arguments.`;
 
 async function run(message, args, client, user) {
 
@@ -60,15 +63,21 @@ ${(comment.length > 0)
     parsed.review(flag, message.author.id, comment, review.id);
     await NohitService.nohitData.submitNohit(message.guildId, parsed);
 
-    judge.Prev.unshift(parsed.ID);
-    const journey = await NohitService.lookupByUser(message.guildId, parsed.UserID, parsed.Difficulty);
-    const next = await findNext(message.guildId, journey) ?? { id: undefined };
-    judge.Next = next.ID;
-    console.log(next);
-    const diff = await NohitService.resolveDifficulty(message.guildId, next.Difficulty);
-    console.log(diff)
-    const boss = await NohitService.resolveBoss(message.guildId, diff.base, next.Boss);
-    return message.reply(`Nohit **${parsed.ID}** reviewed!${(next.ID) ? `\nNext nohit: **${next.ID} - [${boss.textName}](<${next.Url}>)**` : ""}`);
+
+    if (await NohitService.lookupReview(message.guildId, parsed.ID)){
+        NohitService.removeReview(message.guildId, parsed.ID);
+        return message.reply(`Nohit **${parsed.ID}** reviewed!`);
+    }
+    else{
+        judge.Prev.unshift(parsed.ID);
+        const journey = await NohitService.lookupByUser(message.guildId, parsed.UserID, parsed.Difficulty);
+        const next = await findNext(message.guildId, journey) ?? { id: undefined };
+        judge.Next = next.ID;
+
+        const diff = await NohitService.resolveDifficulty(message.guildId, next.Difficulty);
+        const boss = await NohitService.resolveBoss(message.guildId, diff?.base, next.Boss);
+        return message.reply(`Nohit **${parsed.ID}** reviewed!${(next.ID) ? `\nNext nohit: **${next.ID} - [${boss.textName}](<${next.Url}>)**` : ""}`);
+    }
 }
 
 async function parseNohit(guild, args, author){
@@ -163,4 +172,5 @@ function parseVerification(key){
 
 module.exports = {
     run,
+    Description
 };

@@ -37,8 +37,7 @@ async function run(message, args, client, user){
     }
 
     const comment = args.join(" ");
-    nohit.UserComment = comment;
-    NohitService.nohitData.saveNohits(message.guildId);
+    NohitService.recomment(message.guildId, nohit.ID, comment);
     return message.reply((comment.length === 0) ? "Comment removed!" : "Comment rewritten!");
 }
 
