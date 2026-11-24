@@ -47,6 +47,7 @@ addJudgeAlias("delete", "d");
 addJudgeAlias("ignorejourney", ["ij", "ignore"]);
 addJudgeAlias("addalias", ["aa"]);
 addJudgeAlias("allowmodifier", ["allowmodifiers", "am"]);
+addJudgeAlias("togglemisc", ["tm"]);
 addJudgeAlias("togglesubmissions", ["toggle", "ts"]);
 addJudgeAlias("createdifficulty", ["cd"]);
 addJudgeAlias("copydifficulty", ["cpd"]);

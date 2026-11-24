@@ -103,7 +103,7 @@ async function run(message, args, client, user) {
         await DiscordService.sendMessageInChannel(msg, config.submissionLogChannel);
 
         if (remain === 0){
-            NohitService.addCompletedJourney(message.guildId, journey.ID, difficulty.bias);
+            NohitService.addCompletedJourney(message.guildId, journey.ID, difficulty.bias, difficulty.special);
 
             const judges = Array.from(NohitService.userData.judges.get(message.guildId).values());
             const randJudge = judges[Math.floor(Math.random() * judges.length)];

@@ -3,6 +3,8 @@ class Difficulty{
     name;
     isModifier;
     bosses;
+    specialBosses;
+    special;
     isSubmittable;
     bias;
 
@@ -11,9 +13,15 @@ class Difficulty{
         this.isModifier = isModifier;
         this.abbreviation = abbreviation;
         this.bosses = [];
+        this.specialBosses = [];
+        this.special = false;
         this.isSubmittable = true;
         this.allowedModifiers = [];
         this.bias = bias;
+    }
+
+    toggleSpecial(override){
+        this.special = override ?? !this.special;
     }
     
     copyAdd(other){
@@ -40,6 +48,18 @@ class Difficulty{
     }
 
     hasBoss(name){
+        return this.bosses.some(boss => boss.name === name);
+    }
+
+    addSpecialBoss(boss){
+        if(!this.isModifier){
+            this.specialBosses.push(boss);
+            return true;
+        }
+        return false;
+    }
+
+    hasSpecialBoss(name){
         return this.bosses.some(boss => boss.name === name);
     }
 

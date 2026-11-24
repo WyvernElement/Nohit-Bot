@@ -211,7 +211,7 @@ class NohitService {
         let message = `**┌──────── ⋆⋅☆⋆♡⋆☆⋅⋆ ────────┐**
     ♡**__Finished nohit journeys that currently need judging__**♡`
         let count = 0;
-        for (const obj of await this.getViableCompletedJourneys(guildId, bias, true)){
+        for (const obj of await this.getViableCompletedJourneys(guildId, bias, true, true)){
             count++;
             const journey = await this.lookupJourney(guildId, obj.ID);
             message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty})`;
@@ -222,9 +222,17 @@ class NohitService {
         message += `\n**└──────── ⋆⋅☆⋆♡⋆☆⋅⋆ ────────┘**
 
 •⋅⋅•⋅⊰⋅⋅•⋅⋅•⋅⊰⋅•⋅⋅•∙∘☽༓☾∘∙•⋅⋅•⋅⊰⋅•⋅⋅•⋅⋅⊰⋅•⋅⋅•
-    ❅**__Finished miscellaneous nohit journeys__ **❅
-    gonna be honest no idea how to handle this, fuck boss rush
-•⋅⋅•⋅⊰⋅⋅•⋅⋅•⋅⊰⋅•⋅⋅•∙∘☽༓☾∘∙•⋅⋅•⋅⊰⋅•⋅⋅•⋅⋅⊰⋅•⋅⋅•
+    ❅**__Finished miscellaneous nohit journeys__ **❅`
+        count = 0;
+        for (const obj of await this.getViableCompletedJourneys(guildId, bias, true, false)){
+            count++;
+            const journey = await this.lookupJourney(guildId, obj.ID);
+            message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty})`;
+        }
+        if (count === 0){
+            message += `\n\t֎ None! :3 ֎`;
+        }
+        message += `\n•⋅⋅•⋅⊰⋅⋅•⋅⋅•⋅⊰⋅•⋅⋅•∙∘☽༓☾∘∙•⋅⋅•⋅⊰⋅•⋅⋅•⋅⋅⊰⋅•⋅⋅•
 
 ✿•∘ɷ∘•✿••✿•∘ɷ∘•✿•✿•∘ɷ∘•✿••✿•∘ɷ∘•✿
     ✰**__Completed journeys with DQs__**✰`
@@ -249,7 +257,7 @@ class NohitService {
         return await this.nohitData.completedJourneysList(guildId);
     }
 
-    async getViableCompletedJourneys(guildId, bias, filterDQs){
+    async getViableCompletedJourneys(guildId, bias, filterDQs, filterMisc){
         let list = await this.nohitData.completedJourneysList(guildId);
         let map = [];
         for (const obj of list){
@@ -261,6 +269,13 @@ class NohitService {
             if (bias && obj.Bias != bias){
                 map.push(false);
                 continue;
+            }
+            if (filterMisc != undefined){
+                const diff = this.resolveDifficulty(guildId, journey.Difficulty).base;
+                if (diff.special === filterMisc){
+                    map.push(false);
+                    continue;
+                }
             }
             if (filterDQs){
                 map.push(journey.DQ === 0 && journey.Pending > 0);
