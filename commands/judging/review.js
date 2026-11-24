@@ -1,7 +1,6 @@
 const DiscordService = require("../../service/DiscordService");
 const NohitService = require("../../service/NohitService.js");
 const {v, dq} = require("../../discord/emoji_util");
-const { Nohit } = require("../../objects/Nohit.js");
 
 const Description = `Judges a given nohit by ID. "next", "random", and "undo" are also accepted as arguments.`;
 
@@ -28,7 +27,7 @@ async function run(message, args, client, user) {
         return message.reply("This journey's already been completely judged, go find a different one.");
     }
     if (parsed.UserID === message.author.id){
-        return message.reply("You can't judge your own nohits lol");
+        //return message.reply("You can't judge your own nohits lol");
     }
 
     const member = await DiscordService.getMember(parsed.UserID);
@@ -67,21 +66,29 @@ ${(comment.length > 0)
     await NohitService.updateJourneys(message.guildId);
     const journey = await NohitService.lookupByUser(message.guildId, parsed.UserID, parsed.Difficulty);
     const diff = NohitService.resolveDifficulty(message.guildId, parsed.Difficulty).base;
-    if (journey.DQ === 0 && journey.Pending === 0 && diff.bosses.length <= journey.V){
-        journey.Completed = true;
-        NohitService.removeCompletedJourney(message.guildId, journey.ID, diff.bias);
-    }
-
-    if (await NohitService.lookupReview(message.guildId, parsed.ID)){
-        NohitService.removeReview(message.guildId, parsed.ID);
+    const specialBoss = NohitService.resolveBoss(message.guildId, diff, parsed.Boss).special;
+    if (specialBoss){
+        NohitService.removeCompletedJourney(message.guildId, parsed.ID, diff.bias, true);
+        judge.Prev.unshift(parsed.ID);
         return message.reply(`Nohit **${parsed.ID}** reviewed!`);
     }
     else{
-        judge.Prev.unshift(parsed.ID);
-        const next = await findNext(message.guildId, journey);
-        judge.Next = next?.ID;
+        if (journey.DQ === 0 && journey.Pending === 0 && diff.bosses.length <= journey.V){
+            journey.Completed = true;
+            NohitService.removeCompletedJourney(message.guildId, journey.ID, diff.bias, false);
+        }
 
-        return message.reply(`Nohit **${parsed.ID}** reviewed!${(next?.ID) ? `\nNext nohit: **${next.ID} - [${next.Boss}](<${next.Url}>)**` : ""}`);
+        if (await NohitService.lookupReview(message.guildId, parsed.ID)){
+            NohitService.removeReview(message.guildId, parsed.ID);
+            return message.reply(`Nohit **${parsed.ID}** reviewed!`);
+        }
+        else{
+            judge.Prev.unshift(parsed.ID);
+            const next = await findNext(message.guildId, journey);
+            judge.Next = next?.ID;
+
+            return message.reply(`Nohit **${parsed.ID}** reviewed!${(next?.ID) ? `\nNext nohit: **${next.ID} - [${next.Boss}](<${next.Url}>)**` : ""}`);
+        }
     }
 }
 

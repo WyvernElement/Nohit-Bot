@@ -42,6 +42,11 @@ async function run(message, args, client, user){
         return message.reply("You can't do that. Stop trying.");
     }
     
+    const diff = NohitService.resolveDifficulty(message.guildId, nohit.Difficulty).base;
+    if (NohitService.resolveBoss(message.guildId, diff, nohit.Boss).special){
+        return message.reply("I'm guessing you made a typo, but this boss can't be !rr'ed anyways.");
+    }
+
     const config = await ModerationService.getConfig(message.guildId);
     const channelId = config.getReview(parsed.DiffObj.bias)?.ID;
     if (!channelId){

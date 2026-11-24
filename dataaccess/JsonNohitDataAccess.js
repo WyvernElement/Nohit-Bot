@@ -110,7 +110,7 @@ class JsonNohitDataAccess {
         if (typeof boss === "string") {
             return new Boss(boss.replace(/ /g, ""), undefined, boss);
         }
-        return new Boss(boss.name.toLowerCase(), boss.progressionOrder, boss.textName ?? boss.name);
+        return new Boss(boss.name.toLowerCase(), boss.progressionOrder, boss.textName ?? boss.name, boss.special);
     }
 
     importDifficulties() {
@@ -123,6 +123,7 @@ class JsonNohitDataAccess {
                 for (const item of parsedJson) {
                     const difficulty = Object.assign(new Difficulty(), item);
                     difficulty.bosses = (item.bosses ?? []).map(boss => this.toBoss(boss));
+                    difficulty.specialBosses = (item.specialBosses ?? []).map(boss => this.toBoss(boss));
                     difficultyMap.set(item.name, difficulty);
                 }
                 difficultiesMap.set(id, difficultyMap);
@@ -194,7 +195,10 @@ class JsonNohitDataAccess {
             if (journey === undefined) {
                 journey = new Journey(this.journeys.get(guildId).size + 1, nohit.UserID, nohit.Difficulty);
             }
-            journey.addNohit(nohit.ID, nohit.Special);
+            const pieces = nohit.Difficulty.split("-");
+            const difficulty = this.getDifficulty(guildId, pieces[pieces.length - 1].toLowerCase());
+            const special = difficulty?.specialBosses.some(e => e.textName === nohit.Boss);
+            journey.addNohit(nohit.ID, special);
             this.journeys.get(guildId).set(journey.ID, journey);
         }
         const playlistsJsonPath = this.playlistPath(guildId);
@@ -331,24 +335,24 @@ class JsonNohitDataAccess {
         return undefined;
     }
 
-    async lookupCompletedJourney(guildId, id){
-        return this.completedJourneys.get(guildId).find((e) => e.ID === id);
+    async lookupCompletedJourney(guildId, id, nohit){
+        return this.completedJourneys.get(guildId).find((e) => e.ID === id && e.Nohit === nohit);
     }
 
-    async addCompletedJourney(guildId, id, bias){
-        if (!this.completedJourneys.get(guildId).some((e) => e.ID === id && e.Bias === bias)){
-            this.completedJourneys.get(guildId).push({ID: id, Bias: bias, Ignore: false});
+    async addCompletedJourney(guildId, id, bias, nohit){
+        if (!this.completedJourneys.get(guildId).some((e) => e.ID === id && e.Bias === bias && e.Nohit === nohit)){
+            this.completedJourneys.get(guildId).push({ID: id, Bias: bias, Ignore: false, Nohit: nohit});
             this.saveCompleteJourneys(guildId);
         }
     }
 
-    async removeCompletedJourney(guildId, id){
-        this.completedJourneys.set(guildId, this.completedJourneys.get(guildId).filter((e) => e.ID != id));
+    async removeCompletedJourney(guildId, id, nohit){
+        this.completedJourneys.set(guildId, this.completedJourneys.get(guildId).filter((e) => e.ID != id || e.Nohit != nohit));
         this.saveCompleteJourneys(guildId);
     }
 
-    async checkJourneyCompletion(guildId, id){
-        return this.completedJourneys.get(guildId).filter((e) => e.ID === id).length > 0;
+    async checkJourneyCompletion(guildId, id, nohit){
+        return this.completedJourneys.get(guildId).some((e) => e.ID === id && e.Nohit === nohit);
     }
 
     async completedJourneysList(guildId){

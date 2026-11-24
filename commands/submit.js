@@ -96,18 +96,22 @@ async function run(message, args, client, user) {
         const journey = await NohitService.lookupByUser(message.guildId,  nohit.UserID, nohit.Difficulty);
         const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
         const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
-        const remain = (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
+        const specialBoss = NohitService.resolveBoss(message.guildId, difficulty, nohit.Boss).special;
+        const remain = specialBoss ? true : (difficulty.bosses.length - journey.getTotal()) + journey.DQ;
 
         const msg = `\[${nohit.ID}\] <@${nohit.UserID}> has submitted a new nohit for **${nohit.Boss}** on **${nohit.Difficulty}** mode! ${resolveLogString(remain, nohit.Difficulty)}`;
 
         await DiscordService.sendMessageInChannel(msg, config.submissionLogChannel);
 
-        if (remain === 0){
-            NohitService.addCompletedJourney(message.guildId, journey.ID, difficulty.bias, difficulty.special);
+        if (specialBoss || remain === 0){
+            NohitService.addCompletedJourney(message.guildId, specialBoss ? nohit.ID : journey.ID, difficulty.bias, specialBoss);
 
             const judges = Array.from(NohitService.userData.judges.get(message.guildId).values());
             const randJudge = judges[Math.floor(Math.random() * judges.length)];
-            const msg = `<@${nohit.UserID}> has completed their nohit journey on **${nohit.Difficulty}** mode!! :tada:\nNow to wait 2.2 billion years for ${randJudge.DefaultAlias} to ${randJudge.Quote}, enjoy the waiting room! ${randJudge.Emoji}`;
+            const msg = ((specialBoss)
+            ? `<@${nohit.UserID}> has submitted a new **${nohit.Boss}** nohit!!`
+            : `<@${nohit.UserID}> has completed their nohit journey on **${nohit.Difficulty}** mode!!`)
+            + `:tada:\nNow to wait 2.2 billion years for ${randJudge.DefaultAlias} to ${randJudge.Quote}, enjoy the waiting room! ${randJudge.Emoji}`;
 
             await DiscordService.sendMessageInChannel(msg, config.journeyLogChannel);
         }
@@ -120,6 +124,7 @@ function resolveLogString(remaining, difficultyText){
     switch(remaining){
         case 0: return `This was their final nohit on ${difficultyText}!!`;
         case 1: return `They have 1 nohit remaining!!`;
+        case true: return "";
         default: return `They have ${remaining} nohits remaining!!`
     }
 }

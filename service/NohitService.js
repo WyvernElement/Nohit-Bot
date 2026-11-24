@@ -126,7 +126,7 @@ class NohitService {
         if(!journey){
             journey = new Journey((await this.nohitData.totalJourneys(guildId)) + 1, userId, resolved.standard);
         }
-        journey.addNohit(id, newNohit.Special);
+        journey.addNohit(id, resolvedBoss.special);
         await this.nohitData.submitNohit(guildId, newNohit);
         await this.nohitData.updateJourney(guildId, journey);
         await this.userData.updateUser(guildId, userId, user);
@@ -169,29 +169,29 @@ class NohitService {
             }
             const resolved = this.resolveDifficulty(guildId, journey.Difficulty);
             const difficulty = resolved ? resolved.base : this.findDifficulty(guildId, journey.Difficulty);
-            if (difficulty && journey.NohitIDs.length >= difficulty.bosses.filter(boss => boss.textName != "Boss Rush").length){
+            if (difficulty && journey.NohitIDs.length >= difficulty.bosses.length){
                 journey.Completed = true;
             }
         }
         this.nohitData.saveJourneys(guildId);
     }
 
-    async lookupCompletedJourney(guildId, id){
-        return await this.nohitData.lookupCompletedJourney(guildId, id);
+    async lookupCompletedJourney(guildId, id, nohit){
+        return await this.nohitData.lookupCompletedJourney(guildId, id, nohit);
     }
 
-    async addCompletedJourney(guildId, id, bias){
-        this.nohitData.addCompletedJourney(guildId, id, bias);
+    async addCompletedJourney(guildId, id, bias, nohit){
+        this.nohitData.addCompletedJourney(guildId, id, bias, nohit);
         this.updatePinnedQueueMessages(guildId, bias);
     }
 
-    async removeCompletedJourney(guildId, id, bias){
-        this.nohitData.removeCompletedJourney(guildId, id);
+    async removeCompletedJourney(guildId, id, bias, nohit){
+        this.nohitData.removeCompletedJourney(guildId, id, nohit);
         this.updatePinnedQueueMessages(guildId, bias);
     }
 
-    async ignoreJourney(guildId, id){
-        const completed = await this.lookupCompletedJourney(guildId, id);
+    async ignoreJourney(guildId, id, nohit){
+        const completed = await this.lookupCompletedJourney(guildId, id, nohit);
         if (completed){
             completed.Ignored = !completed.Ignored;
             this.updatePinnedQueueMessages(guildId, completed.Bias);
@@ -214,7 +214,7 @@ class NohitService {
         for (const obj of await this.getViableCompletedJourneys(guildId, bias, true, true)){
             count++;
             const journey = await this.lookupJourney(guildId, obj.ID);
-            message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty})`;
+            message += `\n${count}. <@${journey.UserID}> - **${journey.ID}** (${journey.Difficulty})`;
         }
         if (count === 0){
             message += `\n\t֎ None! :3 ֎`;
@@ -226,8 +226,14 @@ class NohitService {
         count = 0;
         for (const obj of await this.getViableCompletedJourneys(guildId, bias, true, false)){
             count++;
-            const journey = await this.lookupJourney(guildId, obj.ID);
-            message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty})`;
+            if (obj.Nohit){
+                const nohit = await this.lookup(guildId, obj.ID);
+                message += `\n${count}. <@${nohit.UserID}> - **${nohit.ID} ${nohit.Boss}** (${nohit.Difficulty})`;
+            }
+            else{
+                const journey = await this.lookupJourney(guildId, obj.ID);
+                message += `\n${count}. <@${journey.UserID}> - **${journey.ID}** (${journey.Difficulty})`;
+            }
         }
         if (count === 0){
             message += `\n\t֎ None! :3 ֎`;
@@ -240,7 +246,7 @@ class NohitService {
         for (const obj of await this.getViableCompletedJourneys(guildId, bias, false)){
             count++;
             const journey = await this.lookupJourney(guildId, obj.ID);
-            message += `\n${count}. <@${journey.UserID}> (${journey.Difficulty} | ${journey.DQ})`;
+            message += `\n${count}. <@${journey.UserID}> - **${journey.ID}** (${journey.Difficulty} | ${journey.DQ})`;
         }
         if (count === 0){
             message += `\n\t֎ None! :3 ֎`;
@@ -249,8 +255,8 @@ class NohitService {
         return message;
     }
 
-    async checkJourneyCompletion(guildId, id){
-        return await this.nohitData.checkJourneyCompletion(guildId, id);
+    async checkJourneyCompletion(guildId, id, nohit){
+        return await this.nohitData.checkJourneyCompletion(guildId, id, nohit);
     }
 
     async completedJourneysList(guildId){
@@ -263,6 +269,15 @@ class NohitService {
         for (const obj of list){
             if (obj.Ignored){
                 map.push(false);
+                continue;
+            }
+            if (obj.Nohit){
+                const nohit = await this.lookup(guildId, obj.ID);
+                if (filterMisc || !filterDQs){
+                    map.push(false);
+                    continue;
+                }
+                map.push(true);
                 continue;
             }
             const journey = await this.lookupJourney(guildId, obj.ID);
@@ -361,7 +376,11 @@ class NohitService {
         }
         const aliased = this.nohitData.getBoss(guildId, token);
         const names = aliased ? [token, aliased] : [token];
-        return difficulty.bosses?.find(boss => names.includes(boss.name) || names.includes(boss.textName));
+        let returnBoss = difficulty.bosses?.find(boss => names.includes(boss.name) || names.includes(boss.textName));
+        if (!returnBoss){
+            returnBoss = difficulty.specialBosses?.find(boss => names.includes(boss.name) || names.includes(boss.textName));
+        }
+        return returnBoss;
     }
 
     resolveDifficulty(guildId, difficultyText){
@@ -517,7 +536,7 @@ class NohitService {
         if (!Number.isFinite(progressionOrder)) {
             return undefined;
         }
-        const difficulty = this.findDifficulty(guildId, difficultyToken);
+        const difficulty = this.resolveDifficulty(guildId, difficultyToken).base;
         if (!difficulty || difficulty.isModifier) {
             return undefined;
         }
