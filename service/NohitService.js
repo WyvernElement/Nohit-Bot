@@ -194,6 +194,7 @@ class NohitService {
         const completed = await this.lookupCompletedJourney(guildId, id, nohit);
         if (completed){
             completed.Ignored = !completed.Ignored;
+            this.nohitData.saveCompleteJourneys(guildId);
             this.updatePinnedQueueMessages(guildId, completed.Bias);
         }
         return completed;
@@ -214,7 +215,7 @@ class NohitService {
         for (const obj of await this.getViableCompletedJourneys(guildId, bias, true, true)){
             count++;
             const journey = await this.lookupJourney(guildId, obj.ID);
-            message += `\n${count}. <@${journey.UserID}> - **${journey.ID}** (${journey.Difficulty})`;
+            message += `\n${count}. **[${journey.ID}]** - <@${journey.UserID}> (${journey.Difficulty})`;
         }
         if (count === 0){
             message += `\n\t֎ None! :3 ֎`;
@@ -228,11 +229,11 @@ class NohitService {
             count++;
             if (obj.Nohit){
                 const nohit = await this.lookup(guildId, obj.ID);
-                message += `\n${count}. <@${nohit.UserID}> - **${nohit.ID} ${nohit.Boss}** (${nohit.Difficulty})`;
+                message += `\n${count}. **[${nohit.ID}]** - <@${nohit.UserID}> ${nohit.Boss} (${nohit.Difficulty})`;
             }
             else{
                 const journey = await this.lookupJourney(guildId, obj.ID);
-                message += `\n${count}. <@${journey.UserID}> - **${journey.ID}** (${journey.Difficulty})`;
+                message += `\n${count}. **[${journey.ID}]** - <@${journey.UserID}> (${journey.Difficulty})`;
             }
         }
         if (count === 0){
@@ -246,7 +247,7 @@ class NohitService {
         for (const obj of await this.getViableCompletedJourneys(guildId, bias, false)){
             count++;
             const journey = await this.lookupJourney(guildId, obj.ID);
-            message += `\n${count}. <@${journey.UserID}> - **${journey.ID}** (${journey.Difficulty} | ${journey.DQ})`;
+            message += `\n${count}. **[${journey.ID}]** - <@${journey.UserID}> (${journey.Difficulty} | ${journey.DQ})`;
         }
         if (count === 0){
             message += `\n\t֎ None! :3 ֎`;

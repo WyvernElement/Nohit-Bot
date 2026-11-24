@@ -84,9 +84,12 @@ ${dq} = Disqualified, needs redo
     const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
     const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);
 
-    for (const nohit of await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs, true)){
+    const sortedNohits = await nohitsInProgressionOrder(message.guildId, difficulty, journey.NohitIDs, true);
+    for (const nohit of sortedNohits){
         if (!nohit?.ID){
-            response += `\n${nohit.Boss}`;
+            if (sortedNohits[sortedNohits.indexOf(nohit) + 1]?.ID){
+                response += `\n${nohit.Boss}`;
+            }
             continue;
         }
         response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;

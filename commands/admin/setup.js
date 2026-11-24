@@ -22,7 +22,7 @@ async function run(message, args, client, user){
             else{
                 const diff = NohitService.resolveDifficulty(message.guildId, journey?.Difficulty).base;
                 const ignored = ignore.some((e) => e.Key === journey.UserID && e.Value === journey.Difficulty);
-                list[i] = { ID: journey?.ID, Bias: diff.bias, Ignored: ignored };
+                list[i] = { ID: journey?.ID, Bias: diff.bias, Ignored: ignored, Nohit: false };
             }
         }
         NohitService.nohitData.saveCompleteJourneys(message.guildId);
