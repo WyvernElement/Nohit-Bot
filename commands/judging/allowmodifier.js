@@ -22,21 +22,11 @@ async function run(message, args, client, user) {
         );
     }
 
-    const result = [];
-    for (const modifier of parsed.modifiers){
-        if (parsed.base.allowedModifiers.includes(modifier.name) || modifier === undefined || !modifier.isModifier){
-            result.push(false);
-        }
-        else{
-            result.push(parsed.base.addModifier(modifier.name));
-        }
-    }
-
+    const result = await NohitService.addModifiers(message.guildId, parsed.base, parsed.modifiers);
     let response = `**__${parsed.base.name}__**:`;
     for (let i = 0; i < parsed.modifiers.length; i++){
-        response += result[i] ? `\n*${parsed.modifiers[i].name}* modifier successfully added.` : `\n**Failed to add ${parsed.modifiers[i].name}!**`
+        response += result[i] ? `\n*${parsed.modifiers[i].name}* modifier successfully added.` : `\n**Failed to add ${parsed.modifiers[i] ? parsed.modifiers[i].name : args[i + 1]}!**`
     }
-    NohitService.nohitData.saveDifficulties(message.guildId);
     return message.reply(response);
 }
 

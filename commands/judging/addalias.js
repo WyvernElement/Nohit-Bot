@@ -17,13 +17,13 @@ async function run(message, args, client, user){
     }
 }
 
-function parseArgs(guild, args){
+async function parseArgs(guild, args){
     if (args.length < 2){
         return { badargs: true }
     }
     const bossName = args.shift().trim().toLowerCase();
     const aliases = args.map((alias) => alias.trim().toLowerCase());
-    return { duplicate: NohitService.addAliases(guild, bossName, aliases) };
+    return { duplicate: await NohitService.addAliases(guild, bossName, aliases) };
 }
 
 module.exports = {

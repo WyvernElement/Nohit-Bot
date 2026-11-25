@@ -552,7 +552,21 @@ class NohitService {
         return difficulty;
     }
 
-    addAliases(guildId, bossName, aliases){
+    async addModifiers(guildId, difficulty, modifiers){
+        const result = [];
+        for(const modifier of modifiers){
+            if(!modifier || difficulty.allowedModifiers.includes(modifier.name) || !modifier.isModifier){
+                result.push(false)
+            }
+            else{
+                result.push(difficulty.addModifier(modifier.name));
+            }
+        }
+        this.nohitData.addDifficulty(guildId, difficulty);
+        return result;
+    }
+
+    async addAliases(guildId, bossName, aliases){
         const duplicate = [];
         for (const alias of aliases){
             if (this.nohitData.getBoss(guildId, alias) === bossName){
