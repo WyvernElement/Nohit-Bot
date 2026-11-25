@@ -38,7 +38,8 @@ addAlias("recomment", ["rewritecomment", "rc"]);
 addAlias("catalogue", ["cat"]);
 addAlias("catalogueall", ["catall"]);
 addAlias("veterans", "v");
-addAlias("await");
+
+const jokeAliases = ["await", "buh", "kill"];
 
 const JUDGING = new Map();
 addJudgeAlias("judgerecomment", ["jrecomment", "jr"]);
@@ -88,45 +89,44 @@ client.on('messageCreate', async (message) => {
       const args = message.content.slice(1).split(" ");
       const commandAlias = args.shift().toLowerCase();
       const user = NohitService.userData.getUser(message.guildId, message.author.id);
+      let folderExtension = "";
+      let commandName;
 
       if(JUDGING.has(commandAlias)){
         if (!NohitService.checkJudge(message.guildId, message.author.id)){
           message.reply("You're not a judge lol get outta here")
+          return;
         }
-        else{
-          try{
-            const commandName = JUDGING.get(commandAlias);
-            const command = require(`./commands/judging/${commandName}.js`);
-            await command.run(message, args, client, user);
-          }
-          catch(err){
-            console.log(err);
-          }
-        }
-      }
-      else if(COMMANDS.has(commandAlias)){
-        try{
-            const commandName = COMMANDS.get(commandAlias);
-            const command = require(`./commands/${commandName}.js`);
-            await command.run(message, args, client, user);
-        }
-        catch(err){
-            console.log(err);
-        }
+        folderExtension = `judging/`;
+        commandName = JUDGING.get(commandAlias);
       }
       else if(ADMIN.has(commandAlias)){
         if (false){
           message.reply("only registered bot admins can use this command")
         }
-        else{
-          try{
-            const commandName = ADMIN.get(commandAlias);
-            const command = require(`./commands/admin/${commandName}.js`);
-            await command.run(message, args, client, user);
-          }
-          catch(err){
+        folderExtension = `admin/`;
+        commandName = ADMIN.get(commandAlias); 
+      }
+      else if(COMMANDS.has(commandAlias)){
+        commandName = COMMANDS.get(commandAlias); 
+      }
+      else{
+        try
+        {
+          await require(`./commands/joke/master.js`)[commandAlias](message, args, client, user);
+          return;
+        }
+        catch(err){
             console.log(err);
-          }
+        }
+      }
+      if (commandName){
+        try{
+            const command = require(`./commands/${folderExtension}${commandName}.js`);
+            await command.run(message, args, client, user);
+        }
+        catch(err){
+            console.log(err);
         }
       }
     }
