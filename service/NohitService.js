@@ -105,8 +105,7 @@ class NohitService {
 
     async journeyComment(guildId, journey, comment){
         journey.Comment = comment.slice(0, 1024);
-        this.nohitData.journeys.get(guildId).set(journey.ID, journey);
-        this.nohitData.saveJourneys(guildId);
+        await this.nohitData.updateJourney(guildId, journey);
     }
 
     async submit(guildId, userId, difficulty, boss, url, comment){
@@ -145,6 +144,7 @@ class NohitService {
     }
 
     async updateJourneys(guildId){
+        const journeys = [];
         for (const [id, journey] of this.nohitData.journeys.get(guildId)){
             journey.V = 0;
             journey.DQ = 0;
@@ -172,8 +172,9 @@ class NohitService {
             if (difficulty && journey.NohitIDs.length >= difficulty.bosses.length){
                 journey.Completed = true;
             }
+            journeys.push(journey);
         }
-        this.nohitData.saveJourneys(guildId);
+        await this.nohitData.updateJourneys(guildId, journeys);
     }
 
     async lookupCompletedJourney(guildId, id, nohit){
@@ -194,7 +195,7 @@ class NohitService {
         const completed = await this.lookupCompletedJourney(guildId, id, nohit);
         if (completed){
             completed.Ignored = !completed.Ignored;
-            this.nohitData.saveCompleteJourneys(guildId);
+            await this.nohitData.updateCompletedJourney(guildId, completed);
             this.updatePinnedQueueMessages(guildId, completed.Bias);
         }
         return completed;
@@ -547,8 +548,21 @@ class NohitService {
         }
         const boss = new Boss(trimmedBossName, progressionOrder, textName.trim());
         difficulty.addBoss(boss);
-        await this.nohitData.saveDifficulties(guildId);
+        this.nohitData.addDifficulty(guildId, difficulty);
         return difficulty;
+    }
+
+    addAliases(guildId, bossName, aliases){
+        const duplicate = [];
+        for (const alias of aliases){
+            if (this.nohitData.getBoss(guildId, alias) === bossName){
+                duplicate.push(alias);
+            }
+            else {
+                this.nohitData.addAlias(guildId, alias, bossName);
+            }
+        }
+        return duplicate;
     }
 
     async toggleSubmissions(guildId, difficulty){

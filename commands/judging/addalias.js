@@ -3,7 +3,7 @@ const NohitService = require("../../service/NohitService.js");
 const Description = "Adds custom boss aliases. Please be mature.";
 
 async function run(message, args, client, user){
-    const parsed = await parseArgs(message.guildId, args);
+    const parsed = parseArgs(message.guildId, args);
     if (parsed.badargs){
         return message.reply("Usage: `!addalias <boss identifier (no spaces)> <list of aliases>`\nExample: `!addalias KingSlime ks slimeking`");
     }
@@ -17,22 +17,13 @@ async function run(message, args, client, user){
     }
 }
 
-async function parseArgs(guild, args){
+function parseArgs(guild, args){
     if (args.length < 2){
         return { badargs: true }
     }
     const bossName = args.shift().trim().toLowerCase();
-    let duplicate = [];
-    for (const a of args){
-        const alias = a.trim().toLowerCase(); 
-        if (NohitService.nohitData.getBoss(guild, alias) === bossName){
-            duplicate.push(alias);
-        }
-        else {
-            NohitService.nohitData.addAlias(guild, alias, bossName);
-        }
-    }
-    return { duplicate };
+    const aliases = args.map((alias) => alias.trim().toLowerCase());
+    return { duplicate: NohitService.addAliases(guild, bossName, aliases) };
 }
 
 module.exports = {
