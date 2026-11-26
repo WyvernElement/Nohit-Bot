@@ -22,12 +22,22 @@ class LanguageDataAccess{
         return langsMap;
     }
 
-    getResponse(language, key, iteration){
+    getResponse(language, key, iteration, args){
         if (iteration === 0){
             iteration = "";
         }
-        console.log(this.languages.get(language));
-        return this.languages.get(language)[String(key) + String(iteration)];
+        let response;
+        do{
+            response = this.languages.get(language)[String(key) + String(iteration)];
+            iteration--;
+        }
+        while (!response && iteration > 0);
+        if (response){
+            for (let i = 0; i < args.length; i++){
+                response = response.replaceAll(`{${i}}`, args[i]);
+            }
+        }
+        return response;
     }
 }
 const langs = new LanguageDataAccess();

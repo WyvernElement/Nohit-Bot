@@ -8,7 +8,7 @@ async function awai(){
 
 
 async function buh(message, args, client, user) {
-    return message.reply("thats sooooo true bestie");
+    return message.reply(user.getResponse("buh"));
 }
 
 async function kill(message, args, client, user) {

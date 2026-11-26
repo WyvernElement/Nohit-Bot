@@ -171,6 +171,9 @@ class NohitService {
             const difficulty = resolved ? resolved.base : this.findDifficulty(guildId, journey.Difficulty);
             if (difficulty && journey.NohitIDs.length >= difficulty.bosses.length){
                 journey.Completed = true;
+                if (journey.V >= difficulty.bosses.length){
+                    journey.Finished = true;
+                }
             }
         }
         this.nohitData.saveJourneys(guildId);

@@ -10,6 +10,7 @@ async function run(message, args, client, user){
 
     await NohitService.nohitData.buildJourneysFromNohitBotv2(message.guildId);
     await NohitService.addJourneyAssociation(message.guildId);
+    await NohitService.updateJourneys(message.guildId);
 
     const ignore = NohitService.nohitData.importIgnoredJourneys(message.guildId);
     const list = await NohitService.completedJourneysList(message.guildId);
@@ -27,7 +28,7 @@ async function run(message, args, client, user){
         }
         NohitService.nohitData.saveCompleteJourneys(message.guildId);
     }
-    return message.reply("Nohit names updated;\nJourney rework built;\nCompleted journeys reformatted;\ninitialized successfully.");
+    return message.reply("Nohit names updated;\nJourney rework built;\nJourneys updated;\nCompleted journeys reformatted;\ninitialized successfully.");
 }
 
 module.exports = {

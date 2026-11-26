@@ -8,7 +8,8 @@ class Journey{
     V;
     DQ;
     Pending;
-    Completed;
+    Completed; // All nohits submitted
+    Finished; // All nohits submitted AND verified
     Comment;
 
     constructor(id, userid, difficulty){

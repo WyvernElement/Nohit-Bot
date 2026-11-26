@@ -193,7 +193,7 @@ async function commands(judge, admin){
     const fields = [];
     for (const dir of fs.readdirSync(commandDir)){
         const name = path.parse(path.join(commandDir, dir)).name
-        const blacklist = ["admin", "judging", "help", "await"]
+        const blacklist = ["admin", "judging", "help", "joke"]
         if (!blacklist.includes(name)){
             const command  = require(folder + name);
             fields.push({
