@@ -10,7 +10,6 @@ async function run(message, args, client, user){
 
     const parsed = parseForKeywords(message.guildId, args);
 
-    await NohitService.updateJourneys(message.guildId);
     let journey;
     if (parsed.num){
         journey = await NohitService.lookupJourney(message.guildId, parsed.num)

@@ -10,9 +10,9 @@ function verificationEmoji(nohit){
         return ":question:";
     }
     if (nohit.Verification === "Verified"){
-        return "V"//v;
+        return v;
     }
-    return "DQ"//dq;
+    return dq;
 }
 
 async function nohitsInSubmissionOrder(guildId, ids){
@@ -32,7 +32,6 @@ async function run(message, args, client, user){
 
     const parsed = parseForKeywords(message.guildId, args);
 
-    await NohitService.updateJourneys(message.guildId);
     let journey;
     if (parsed.num){
         journey = await NohitService.lookupJourney(message.guildId, parsed.num)
@@ -65,9 +64,11 @@ ${dq} = Disqualified, needs redo
     }
 
     if (journey.SpecialIDs?.length){
-        response += "\n";
+        response += "\n\n**__Special Nohits__**";
         for (const nohit of await nohitsInSubmissionOrder(message.guildId, journey.SpecialIDs)){
-            response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)}`;
+            const [year, month, day] = nohit.Timestamp.slice(0, 10).split('-');
+            const formattedDate = `${month}/${day}/${year}`;
+            response += `\n${nohit.ID} - ${nohit.Boss} - ${verificationEmoji(nohit)} - *${formattedDate}*`;
         }
     }
 
@@ -80,7 +81,18 @@ ${dq} = Disqualified, needs redo
 ${journey.DQ} DQs, ${journey.Pending} pending, and ${journey.V} verified nohits.
 **${(remaining === 0) ?  "This nohit journey is completed!!" : `${remaining} nohit${remaining === 1 ? "" : "s"} remain.`}**`;
 
-    return message.reply(response);
+    const messages = [];
+    while (response.length > 2000){
+        const index = response.lastIndexOf("\n", 2000)
+        messages.push(response.slice(0, index));
+        response = response.slice(index);
+    }
+    messages.push(response);
+
+    message.reply(messages.shift())
+    for (const response of messages){
+        message.channel.send(response);
+    }
 }
 
 module.exports = {

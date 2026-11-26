@@ -312,7 +312,7 @@ class JsonNohitDataAccess {
 
     async getJourney(guildId, id) {
         const numericId = Number(id);
-        return this.journeys.get(guildId).get(numericId);
+        return await this.fixJourney(guildId, numericId);
     }
 
     async totalJourneys(guildId){
@@ -322,6 +322,62 @@ class JsonNohitDataAccess {
     async updateJourney(guildId, newJourney){
         this.journeys.get(guildId).set(newJourney.ID, newJourney);
         this.saveJourneys(guildId);
+    }
+
+    async fixJourney(guildId, id){
+        const journey = await this.journeys.get(guildId).get(id);
+        if (journey){
+            journey.V = 0;
+            journey.DQ = 0;
+            journey.Pending = 0;
+            const difficulty = this.getDifficulty(guildId, journey.Difficulty.split("-").at(-1)); // guhhhh i know but this is probably safe right
+            for (const id of journey.NohitIDs){
+                const nohit = await this.getNohit(guildId, id);
+                if (nohit.UserComment === "Deleted"){
+                    journey.removeNohit(id);
+                    console.log("fucked");
+                    continue;
+                }
+                if (difficulty?.specialBosses.some((e) => e.textName === nohit.Boss)){
+                    journey.removeNohit(id);
+                    journey.addNohit(id, true);
+                    console.log("extra fucked");
+                    continue;
+                }
+                switch (nohit.Verification){
+                case "Verified":
+                    journey.V++;
+                    break;
+                case "Disqualified":
+                    journey.DQ++;
+                    break;
+                case "Pending":
+                    journey.Pending++;
+                    break;
+                }
+            }
+            for (const id of journey.SpecialIDs){
+                const nohit = await this.getNohit(guildId, id);
+                if (nohit.UserComment === "Deleted"){
+                    journey.removeNohit(id, true);
+                    continue;
+                }
+                if (difficulty?.bosses.some((e) => e.textName === nohit.Boss)){
+                    journey.removeNohit(id, true);
+                    journey.addNohit(id);
+                    continue;
+                }
+            }
+
+            if(difficulty && journey.NohitIDs.length >= difficulty.bosses.length){
+                journey.Completed = true;
+                if (journey.V >= difficulty.bosses.length){
+                    journey.Finished = true;
+                }
+            }
+            await this.updateJourney(guildId, journey);
+            return journey;
+        }
     }
 
     async updateJourneys(guildId, journeys){
@@ -337,7 +393,7 @@ class JsonNohitDataAccess {
             const sameUser = String(journey.UserID) === String(userId);
             const sameDifficulty = journey.Difficulty === difficulty;
             if (sameUser && sameDifficulty) {
-                return journey;
+                return await this.fixJourney(guildId, journey.ID);
             }
         }
         return undefined;

@@ -9,8 +9,6 @@ async function run(message, args, client, user){
         return message.reply("Who're you after? That's not a person.");
     }
     else{
-        await NohitService.updateJourneys(message.guildId);
-        
         const replyPayload = await buildOverviewEmbed(message.guildId, caller);
         return message.reply({embeds: [replyPayload]});
     }

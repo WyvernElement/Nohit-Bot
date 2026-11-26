@@ -44,12 +44,24 @@ async function run(message, args, client, user){
             bossNames.splice(index, 1);
         }
     }
-    let msg = `__Remaining nohits for **${await DiscordService.getDisplayName(journey.UserID)}** on **${journey.Difficulty}** mode__\n\n`;
+    let response = `__Remaining nohits for **${await DiscordService.getDisplayName(journey.UserID)}** on **${journey.Difficulty}** mode__\n\n`;
     for(const boss of bossNames){
-        msg += boss + "\n";
+        response += boss + "\n";
     }
-    msg += `\n**${bossNames.length}** nohits remaining. Best of luck :salute:`
-    return message.reply(msg);
+    response += `\n**${bossNames.length}** nohits remaining. Best of luck :salute:`
+
+    const messages = [];
+    while (response.length > 2000){
+        const index = response.lastIndexOf("\n", 2000)
+        messages.push(response.slice(0, index));
+        response = response.slice(index);
+    }
+    messages.push(response);
+
+    message.reply(messages.shift())
+    for (const response of messages){
+        message.channel.send(response);
+    }
 }
 module.exports = {
     run,

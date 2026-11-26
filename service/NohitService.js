@@ -104,7 +104,7 @@ class NohitService {
     }
 
     async journeyComment(guildId, journey, comment){
-        journey.Comment = comment.slice(0, 1024);
+        journey.Comment = comment.slice(0, 1000);
         await this.nohitData.updateJourney(guildId, journey);
     }
 
@@ -134,7 +134,6 @@ class NohitService {
 
     async deleteNohit(guildId, nohit){
         await this.nohitData.deleteNohit(guildId, nohit);
-        this.updateJourneys(guildId);
     }
 
     async recomment(guildId, id, newComment){
@@ -144,40 +143,9 @@ class NohitService {
     }
 
     async updateJourneys(guildId){
-        const journeys = [];
         for (const [id, journey] of this.nohitData.journeys.get(guildId)){
-            journey.V = 0;
-            journey.DQ = 0;
-            journey.Pending = 0;
-            for (const id of journey.NohitIDs){
-                const nohit = await this.lookup(guildId, id);
-                if (nohit.UserComment === "Deleted"){
-                    journey.NohitIDs.splice(journey.NohitIDs.indexOf(id), 1);
-                    continue;
-                }
-                switch (nohit.Verification){
-                case "Verified":
-                    journey.V++;
-                    break;
-                case "Disqualified":
-                    journey.DQ++;
-                    break;
-                case "Pending":
-                    journey.Pending++;
-                    break;
-                }
-            }
-            const resolved = this.resolveDifficulty(guildId, journey.Difficulty);
-            const difficulty = resolved ? resolved.base : this.findDifficulty(guildId, journey.Difficulty);
-            if (difficulty && journey.NohitIDs.length >= difficulty.bosses.length){
-                journey.Completed = true;
-                if (journey.V >= difficulty.bosses.length){
-                    journey.Finished = true;
-                }
-            }
-            journeys.push(journey);
+            await this.nohitData.fixJourney(guildId, id);
         }
-        await this.nohitData.updateJourneys(guildId, journeys);
     }
 
     async lookupCompletedJourney(guildId, id, nohit){

@@ -36,6 +36,17 @@ class Journey{
         }
     }
 
+    removeNohit(id, special){
+        if (special){
+            if (this.SpecialIDs.includes(id)){
+                this.SpecialIDs.splice(this.SpecialIDs.indexOf(id), 1);
+            }
+        }
+        else if (this.NohitIDs.includes(id)){
+            this.NohitIDs.splice(this.NohitIDs.indexOf(id), 1);
+        }
+    }
+
     setPlaylist(link){
         const cleanedLink = link.split("?si=")[0].split("&si=")[0];  // removes stupid tracker from links automatically
         this.Playlist = cleanedLink;

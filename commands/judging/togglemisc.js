@@ -6,13 +6,12 @@ async function run(message, args, client, user) {
     if (args.length === 0) {
         return message.reply("Usage: `!togglemisc <difficulty>` OR `!togglemisc <difficulty> <boss>`.\nExample: `!togglemisc Empyreal`, `!tm d br`");
     }
-    const parsed = NohitService.resolveDifficulty(message.guildId, args[0]).base;
+    const parsed = NohitService.resolveDifficulty(message.guildId, args[0])?.base;
     if (!parsed) {
         return message.reply("Usage: `!togglemisc <difficulty>`.\nExample: `!togglemisc Empyreal`");
     }
     const pboss = NohitService.resolveBoss(message.guildId, parsed, args[1]);
     
-    console.log(pboss)
     let sp;
     if (pboss){
         pboss.special = !pboss.special
