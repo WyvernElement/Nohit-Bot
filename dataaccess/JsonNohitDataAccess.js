@@ -324,6 +324,14 @@ class JsonNohitDataAccess {
         this.saveJourneys(guildId);
     }
 
+    async updateJourneys(guildId, journeys){
+        const stored = this.journeys.get(guildId);
+        for (const journey of journeys){
+            stored.set(journey.ID, journey);
+        }
+        this.saveJourneys(guildId);
+    }
+
     async getJourneyByData(guildId, userId, difficulty){
         for (const journey of this.journeys.get(guildId).values()) {
             const sameUser = String(journey.UserID) === String(userId);
@@ -348,6 +356,16 @@ class JsonNohitDataAccess {
 
     async removeCompletedJourney(guildId, id, nohit){
         this.completedJourneys.set(guildId, this.completedJourneys.get(guildId).filter((e) => e.ID != id || e.Nohit != nohit));
+        this.saveCompleteJourneys(guildId);
+    }
+
+    async updateCompletedJourney(guildId, completed){
+        const list = this.completedJourneys.get(guildId);
+        const index = list.indexOf(completed);
+        if (index === -1){
+            return;
+        }
+        list[index] = completed;
         this.saveCompleteJourneys(guildId);
     }
 
