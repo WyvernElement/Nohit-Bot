@@ -46,6 +46,7 @@ addJudgeAlias("judgerecomment", ["jrecomment", "jr"]);
 addJudgeAlias("review", "r");
 addJudgeAlias("delete", "d");
 addJudgeAlias("ignorejourney", ["ij", "ignore"]);
+addJudgeAlias("completejourney", ["cj"]);
 addJudgeAlias("addalias", ["aa"]);
 addJudgeAlias("allowmodifier", ["allowmodifiers", "am"]);
 addJudgeAlias("togglemisc", ["tm"]);
