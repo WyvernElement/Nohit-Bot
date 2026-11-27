@@ -33,33 +33,24 @@ async function run(message, args, client, user) {
         );
     }
 
-    const config = await moderation.getConfig(message.guildId);
-
-    const clean = config.getReview(parsed.bias);
-
-    if (clean){
-        if (!parsed.reviewChannel){
-            config.reviewChannel.delete(parsed.bias);
-        }
-        else{
-            DiscordService.deleteMessageInChannel(clean.ID, clean.Queue);
-            DiscordService.deleteMessageInChannel(clean.ID, clean.RR);
-        }
+    const existing = await moderation.getReview(message.guildId, parsed.bias);
+    if (existing && parsed.reviewChannel){
+        DiscordService.deleteMessageInChannel(existing.ID, existing.Queue);
+        DiscordService.deleteMessageInChannel(existing.ID, existing.RR);
     }
-
 
     const rrMsg = await DiscordService.sendMessageInChannel(await NohitService.getReviewsComment(message.guildId, parsed.bias), parsed.reviewChannel);
     rrMsg.pin();
     const qMsg = await DiscordService.sendMessageInChannel(`Temporary queue placeholder for ${parsed.bias}, still trying to think of how to handle updating this`, parsed.reviewChannel);
     qMsg.pin();
 
-    config.addReviewChannel(
+    await moderation.addReviewChannel(
+        message.guildId,
         parsed.bias,
         parsed.reviewChannel,
         qMsg.id,
         rrMsg.id
     );
-    moderation.configData.setConfig(message.guildId, config);
 
     return message.reply("Bias associated with channel.");
 }

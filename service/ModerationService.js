@@ -58,6 +58,17 @@ class ModerationService{
         const config = await this.getConfig(guildId);
         return config.submissionsAllowed;
     }
+
+    async getReview(guildId, bias){
+        const config = await this.getConfig(guildId);
+        return config.getReview(bias);
+    }
+
+    async addReviewChannel(guildId, bias, reviewChannel, queueMessageId, rrMessageId){
+        const config = await this.getConfig(guildId);
+        config.addReviewChannel(bias, reviewChannel, queueMessageId, rrMessageId);
+        await this.configData.setConfig(guildId, config);
+    }
 }
 const moderation = new ModerationService();
 module.exports = moderation;
