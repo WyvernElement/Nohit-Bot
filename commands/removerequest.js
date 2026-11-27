@@ -8,7 +8,7 @@ const Description = "Removes a given currently pending review request.";
 
 async function run(message, args, client, user){
     if (args.length === 0){
-        return message.reply("Usage: `!requestreview <id>` or `!requestreview <boss> <difficulty>`.\nExample: `!requestreview 12504`, `!rr s-d scal`");
+        return message.reply("Usage: `!removerequest <id>` or `!removerequest <boss> <difficulty>`.\nExample: `!removerequest 12504`, `!rr s-d scal`");
     }
     
     const isJudge = NohitService.checkJudge(message.guildId, message.author.id);
@@ -48,7 +48,7 @@ async function run(message, args, client, user){
     }
 
     const config = await ModerationService.getConfig(message.guildId);
-    const channelId = config.getReview(parsed.DiffObj.bias)?.ID;
+    const channelId = config.getReview(diff.bias)?.ID;
     if (!channelId){
         return message.reply("Removing a request for a nohit that can't even be reviewed. How do you do it?");
     }

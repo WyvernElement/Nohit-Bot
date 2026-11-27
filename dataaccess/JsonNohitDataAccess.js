@@ -335,13 +335,11 @@ class JsonNohitDataAccess {
                 const nohit = await this.getNohit(guildId, id);
                 if (nohit.UserComment === "Deleted"){
                     journey.removeNohit(id);
-                    console.log("fucked");
                     continue;
                 }
                 if (difficulty?.specialBosses.some((e) => e.textName === nohit.Boss)){
                     journey.removeNohit(id);
                     journey.addNohit(id, true);
-                    console.log("extra fucked");
                     continue;
                 }
                 switch (nohit.Verification){

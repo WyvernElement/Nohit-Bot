@@ -133,6 +133,10 @@ class NohitService {
     }
 
     async deleteNohit(guildId, nohit){
+        await this.removeReview(guildId, nohit.ID);
+        this.nohitData.removeCompletedJourney(guildId, nohit.ID, true);
+        const bias = this.resolveDifficulty(guildId, nohit.Difficulty).base.bias;
+        this.updatePinnedQueueMessages(guildId, bias);
         await this.nohitData.deleteNohit(guildId, nohit);
     }
 
@@ -174,7 +178,6 @@ class NohitService {
 
     async updatePinnedQueueMessages(guildId, bias){
         const config = await ModerationService.getConfig(guildId);
-        await this.updateJourneys(guildId);
         DiscordService.editMessageInChannel(config.nohitQueueChannel, config.journeyQueueMessage, await this.getQueueComment(guildId));
         const reviewChannel = config.reviewChannels.get(bias);
         DiscordService.editMessageInChannel(reviewChannel.ID, reviewChannel.Queue, await this.getQueueComment(guildId, bias));
@@ -276,8 +279,6 @@ class NohitService {
     }
 
     async stats(guildId){
-        await this.updateJourneys(guildId);
-        
         let Stats = {
             V: 0,
             DQ: 0,
@@ -373,7 +374,7 @@ class NohitService {
         let modifiers = difficulties.filter(difficulty => difficulty.isModifier);
         if (mix.length > 0){
             if (bases.length === 0){
-                bases = [mix.shift().diff, ...bases];
+                bases = [mix.pop().diff, ...bases];
                 modifiers = [...mix.flatMap(parsed => parsed.modifier), ...modifiers];
             }
             else{
@@ -421,18 +422,20 @@ class NohitService {
                 }
             }
         }
+        if (token.length > 2){
         for (const difficulty of this.nohitData.difficulties.get(guildId).values()) {
-            if (difficulty.name.toLowerCase().includes(token.toLowerCase())) {
-                if (mod){
-                    if(!diff){
-                        diff = difficulty;
+                if (difficulty.name.toLowerCase().includes(token.toLowerCase())) {
+                    if (mod){
+                        if(!diff){
+                            diff = difficulty;
+                        }
+                        if(!modifier){
+                            modifier = difficulty;
+                        }
                     }
-                    if(!modifier){
-                        modifier = difficulty;
+                    else{
+                        return difficulty;
                     }
-                }
-                else{
-                    return difficulty;
                 }
             }
         }

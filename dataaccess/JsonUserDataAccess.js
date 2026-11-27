@@ -38,8 +38,10 @@ class JsonUserDataAccess{
                 const rawJson = fs.readFileSync(this.userPath(id), "utf-8");
                 const parsedJson = JSON.parse(rawJson.replace(/(:\s*)(\d{16,})(\s*[,}\]])/g, '$1"$2"$3'));
                 const userMap = new Map();
-                for (const item of parsedJson) {
-                    userMap.set(item.ID, Object.assign(new User(), item));
+                if ([...Object.values(parsedJson)].length > 0){
+                    for (const item of parsedJson) {
+                        userMap.set(item.ID, Object.assign(new User(), item));
+                    }
                 }
                 usersMap.set(id, userMap);
             }

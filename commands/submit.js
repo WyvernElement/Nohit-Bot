@@ -41,12 +41,12 @@ async function run(message, args, client, user) {
     }
 
     const parsed = parseForKeywords(message.guildId, args);
-
-    if (!parsed.DiffObj.isSubmittable){
-        return message.reply("This difficulty is not currently accepting submissions.");
-    }
+    
     if (!parsed.Diff){
         return message.reply("You typed the difficulty wrong.");
+    }
+    if (!parsed.DiffObj.isSubmittable){
+        return message.reply("This difficulty is not currently accepting submissions.");
     }
     if (!parsed.Boss){
         return message.reply("That's not a valid boss name!");
@@ -90,9 +90,6 @@ async function run(message, args, client, user) {
         : `Submitted nohit **#${nohit.ID}** (${nohit.Boss} on ${nohit.Difficulty}).`;
 
     if(config.submissionLogChannel){
-        if (existing){
-            await NohitService.updateJourneys(message.guildId);
-        }
         const journey = await NohitService.lookupByUser(message.guildId,  nohit.UserID, nohit.Difficulty);
         const resolved = NohitService.resolveDifficulty(message.guildId, journey.Difficulty);
         const difficulty = resolved ? resolved.base : NohitService.findDifficulty(message.guildId, journey.Difficulty);

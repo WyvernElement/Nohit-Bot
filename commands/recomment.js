@@ -5,7 +5,7 @@ const Description = "Allows you to add, change, or remove your comment on a nohi
 
 async function run(message, args, client, user){
     if (args.length === 0){
-        return message.reply("Uhh... whatttt do you want from me? I can't *do* anything if you're not going to *tell me* anything.");
+        return message.reply("C'mon. Gimme a nohit, then let me know what you want to change the comment to. `!recomment 12504 this will change the comment` and all that, y'know.");
     }
 
     const parsed = parseForKeywords(message.guildId, args);

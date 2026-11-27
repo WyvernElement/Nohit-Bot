@@ -1,5 +1,6 @@
 const DiscordService = require("../../service/DiscordService");
 const NohitService = require("../../service/NohitService.js");
+const ModerationService = require("../../service/ModerationService");
 
 const {parseForKeywords} = require("../../discord/argument_util");
 
@@ -44,7 +45,14 @@ ${(args.length === 0)
         ? ""
         : `Reason: "${args.join(" ")}"`
     }`);
-    
+
+    const config = await ModerationService.getConfig(message.guildId);
+    const channelId = config.getReview(NohitService.resolveDifficulty(message.guildId, nohit.Difficulty).base.bias)?.ID;
+    const messageId = (await NohitService.lookupReview(message.guildId, nohit.ID)).ID; // need to find a better place for this, but it's fine, it's only here and in !rrr
+    if (channelId && messageId){
+        DiscordService.deleteMessageInChannel(channelId, messageId);
+    }
+
     NohitService.deleteNohit(message.guildId, nohit);
 
     return message.reply(`Nohit **[${nohit.ID}]** deleted, I hope that was necessary.`);

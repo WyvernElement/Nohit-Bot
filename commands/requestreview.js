@@ -55,18 +55,18 @@ async function run(message, args, client, user){
         }
     }
 
-    const diff = NohitService.resolveDifficulty(message.guildId, nohit.Difficulty).base;
-    if (NohitService.resolveBoss(message.guildId, diff, nohit.Boss).special){
+    const diff = NohitService.resolveDifficulty(message.guildId, nohit.Difficulty);
+    if (NohitService.resolveBoss(message.guildId, diff.base, nohit.Boss).special){
         return message.reply("You can't request reviews for submissions under this boss. If it's pending, it's already in the queue, anyways.");
     }
 
     const config = await ModerationService.getConfig(message.guildId);
-    const channelId = config.getReview(parsed.DiffObj.bias).ID;
+    const channelId = config.getReview(diff.base.bias).ID;
     if (!channelId){
         return message.reply("Unfortunately, I can't submit your request, as that difficulty is not being judged.");
     }
 
-    const msg = `**[!]** <@${message.author.id}> has requested a ${(nohit.Verification != "Pending") ? "re-" : ""}review for their ${nohit.Boss} nohit on ${diff}! ${(j)
+    const msg = `**[!]** <@${message.author.id}> has requested a ${(nohit.Verification != "Pending") ? "re-" : ""}review for their ${nohit.Boss} nohit on ${diff.standard}! ${(j)
         ? `<@${j}>, you were specifically requested to judge this nohit.`
         : "Whenever a judge is available, a review would be appreciated."
     } ${(args.length === 0)
@@ -75,7 +75,7 @@ async function run(message, args, client, user){
 
     const replyPayload = await buildNohitEmbed(nohit, message.guildId);
     const rr = await DiscordService.sendMessageInChannel(msg, channelId, [replyPayload]);
-    NohitService.addReview(message.guildId, nohit.ID, rr.id, parsed.DiffObj.bias);
+    NohitService.addReview(message.guildId, nohit.ID, rr.id, diff.base.bias);
     
     return message.reply(`Your request has been submitted to ${(j) ? await DiscordService.getDisplayName(j, message.guildId) : "the judges"}!`);
 

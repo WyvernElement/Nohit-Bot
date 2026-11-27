@@ -7,7 +7,7 @@ const Description = "Looks up a nohit by ID or boss, difficulty, and user.";
 
 async function run(message, args, client, user){
     if (args.length === 0){
-        return message.reply("I can't work with nothing, c'mon.");
+        return message.reply("You'll need to give me an ID or specify the boss and difficulty (and user, if it's not yours!)");
     }
 
     const parsed = parseForKeywords(message.guildId, args);

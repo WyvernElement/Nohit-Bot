@@ -7,7 +7,6 @@ async function run(message, args, client, user){
     let c = 0.0;
     let t = 0.0;
     for (const journey of NohitService.nohitData.journeys.get(message.guildId).values()){
-        //console.log(journey.V);
         if (journey.Completed){
             c++;
         }
@@ -15,17 +14,18 @@ async function run(message, args, client, user){
     }
 
     let response = "";
-    for (const [diff, item] of Diffs){
+    for (const [diff, item] of new Map([...Diffs.entries()].sort((a, b) => b[1].T - a[1].T))){
         if (diff && diff != "Deleted"){
             response += `\n**[${diff}]** - ${item.T}`;
         }
     }
-    return message.reply(`Average completion rate of ${c} ${t} ${Math.round((c/t)*10000)/100}%
+    return message.reply(`Total completed journeys: ${c}
+Average completion rate of ${Math.round((c/t)*10000)/100}%
+**Total: ${Stats.T}**
+(${Stats.T - Stats.D} entries - ${Stats.D} deletions)
 Verifications: ${Stats.V}
 Disqualifications: ${Stats.DQ}
 Pending: ${Stats.P}
-Deleted: ${Stats.D}
-**Total: ${Stats.T}**
 ----------------------------------${response}`)
 }
 module.exports = {
